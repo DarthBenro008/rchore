@@ -1,11 +1,13 @@
 mod cli;
+mod oauth;
 mod tasks;
 
-use structopt::StructOpt;
-use cli::{Action::*, CommandLineArgs};
-use tasks::Task;
-use std::path::PathBuf;
 use anyhow::anyhow;
+use cli::{CommandLineArgs, Commands::*, GoogleAction::*, LocalAction::*};
+use dotenv::dotenv;
+use std::path::PathBuf;
+use structopt::StructOpt;
+use tasks::Task;
 
 fn default_local_journal() -> Option<PathBuf> {
     home::home_dir().map(|mut path| {
@@ -14,18 +16,25 @@ fn default_local_journal() -> Option<PathBuf> {
     })
 }
 
-fn main() -> anyhow::Result<()>{
-    let CommandLineArgs {
-        action,
-        journal_file,
-    } = CommandLineArgs::from_args();
+fn main() -> anyhow::Result<()> {
+    dotenv().ok();
 
-    let journal_file = journal_file.or_else(default_local_journal).ok_or(anyhow!("Failed to find rchore journal"))?;
+    let CommandLineArgs { cmd, journal_file } = CommandLineArgs::from_args();
 
-    match action {
-        Add {text} => tasks::add_task(journal_file, Task::new(text)),
-        Done {position} => tasks::complete_task(journal_file, position),
-        List => tasks::list_tasks(journal_file)
-    }?;
+    let journal_file = journal_file
+        .or_else(default_local_journal)
+        .ok_or(anyhow!("Failed to find rchore journal"))?;
+
+    match cmd {
+        Tasks { action } => match action {
+            Add { text } => tasks::add_task(journal_file, Task::new(text))?,
+            Done { position } => tasks::complete_task(journal_file, position)?,
+            List => tasks::list_tasks(journal_file)?,
+        },
+        Google { action } => match action {
+            Login => oauth::oauth_login()?,
+        },
+    }
+
     Ok(())
 }

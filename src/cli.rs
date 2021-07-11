@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 use structopt::StructOpt;
 
-#[derive(Debug, StructOpt)]
-pub enum Action{
+#[derive(Debug, StructOpt, PartialEq)]
+pub enum LocalAction {
     Add {
         #[structopt()]
         text: String,
@@ -12,20 +12,32 @@ pub enum Action{
         #[structopt()]
         position: usize,
     },
-    
     List,
 }
 
-#[derive(Debug, StructOpt)]
-#[structopt(
-    name = "R Chore",
-    about = "A command line to-do app written in Rust"
-)]
-pub struct CommandLineArgs{
-    #[structopt(subcommand)]
-    pub action: Action,
-    #[structopt(parse(from_os_str), short, long)]
-    pub journal_file: Option<PathBuf>
+#[derive(Debug, StructOpt, PartialEq)]
+pub enum GoogleAction {
+    Login,
 }
 
+#[derive(Debug, StructOpt, PartialEq)]
+#[structopt(name = "R Chore", about = "A command line to-do app written in Rust")]
+pub struct CommandLineArgs {
+    #[structopt(subcommand)]
+    pub cmd: Commands,
 
+    #[structopt(parse(from_os_str), short, long)]
+    pub journal_file: Option<PathBuf>,
+}
+
+#[derive(Debug, StructOpt, PartialEq)]
+pub enum Commands {
+    Tasks {
+        #[structopt(subcommand)]
+        action: LocalAction,
+    },
+    Google {
+        #[structopt(subcommand)]
+        action: GoogleAction,
+    },
+}
