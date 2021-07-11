@@ -74,6 +74,8 @@ pub fn list_tasks(journal_path: PathBuf) -> Result<()> {
             println!("{}: {}", order,  task);
             order += 1;
         }
+    }else{
+        println!("Kudos! You do not have any tasks pending!");
     }
 
     Ok(())
