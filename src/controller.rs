@@ -6,6 +6,7 @@ use std::env;
 pub fn test_fetch() -> anyhow::Result<()> {
     let token = env::var("ID").unwrap();
     let formatted_token = format!("{} {}", "Bearer ", token);
+    println!("{}", formatted_token);
     let mut headers = header::HeaderMap::new();
     headers.insert(
         header::AUTHORIZATION,
