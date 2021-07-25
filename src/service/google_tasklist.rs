@@ -1,9 +1,5 @@
+use super::google_api::{format_base_url, format_task_url, GoogleApiClient};
 use crate::models::tasklist::{TaskList, TaskListResponse};
-
-pub struct ApiClient {
-    pub client: reqwest::blocking::Client,
-    pub base_url: String,
-}
 
 pub trait ApiTaskList {
     fn fetch_tasklist(&self) -> Result<TaskListResponse, Box<dyn std::error::Error>>;
@@ -12,23 +8,7 @@ pub trait ApiTaskList {
     fn update_tasklist(&self, id: String, title: String) -> Result<(), Box<dyn std::error::Error>>;
 }
 
-trait ApiTasks {
-    fn fetch_all_tasks(&self);
-    fn fetch_task(&self);
-    fn delete_task(&self);
-    fn update_task(&self);
-    fn clear_completed_tasks(&self);
-}
-
-fn format_base_url(base_url: &String, route: String) -> String {
-    return format!("{}{}", base_url, route);
-}
-
-fn format_task_url(base_url: &String, route: String, task_id: String) -> String {
-    return format!("{}/{}", format_base_url(&base_url, route), task_id);
-}
-
-impl ApiTaskList for ApiClient {
+impl ApiTaskList for GoogleApiClient {
     fn fetch_tasklist(&self) -> Result<TaskListResponse, Box<dyn std::error::Error>> {
         let url = format_base_url(&self.base_url, String::from("/users/@me/lists"));
         let resp = self.client.get(url).send()?.json::<TaskListResponse>()?;

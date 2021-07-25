@@ -1,4 +1,5 @@
-use crate::api::{ApiClient, ApiTaskList};
+use crate::service::google_api::GoogleApiClient;
+use crate::service::google_tasklist::ApiTaskList;
 use anyhow;
 use reqwest::header;
 use std::env;
@@ -15,7 +16,7 @@ pub fn test_fetch() -> anyhow::Result<()> {
     let reqwest_client = reqwest::blocking::Client::builder()
         .default_headers(headers)
         .build()?;
-    let google_api_client = ApiClient {
+    let google_api_client = GoogleApiClient {
         base_url: String::from("https://tasks.googleapis.com/tasks/v1"),
         client: reqwest_client,
     };

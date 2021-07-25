@@ -1,8 +1,8 @@
-mod api;
 mod cli;
 mod controller;
 mod models;
 mod oauth;
+mod service;
 mod tasks;
 
 use anyhow::anyhow;
