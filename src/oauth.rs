@@ -6,7 +6,7 @@ use oauth2::{
     PkceCodeVerifier, RedirectUrl, Scope, TokenResponse, TokenUrl,
 };
 use std::env;
-use std::io::{BufRead, BufReader, Result, Write};
+use std::io::{BufRead, BufReader, Write};
 use std::net::TcpListener;
 use url::Url;
 
@@ -14,7 +14,8 @@ pub fn oauth_login() -> anyhow::Result<()> {
     let client = create_oauth_client()?;
     let pkce_code_verification = initiate_oauth(&client)?;
     let token = get_token(&client, pkce_code_verification)?;
-    Ok(())
+    println!("{}", token);
+    return Ok(());
 }
 
 fn create_oauth_client() -> anyhow::Result<BasicClient> {

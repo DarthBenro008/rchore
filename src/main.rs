@@ -1,4 +1,7 @@
+mod api;
 mod cli;
+mod controller;
+mod models;
 mod oauth;
 mod tasks;
 
@@ -30,11 +33,11 @@ fn main() -> anyhow::Result<()> {
             Add { text } => tasks::add_task(journal_file, Task::new(text))?,
             Done { position } => tasks::complete_task(journal_file, position)?,
             List => tasks::list_tasks(journal_file)?,
+            Fetch => controller::test_fetch()?,
         },
         Google { action } => match action {
             Login => oauth::oauth_login()?,
         },
     }
-
     Ok(())
 }

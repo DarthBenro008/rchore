@@ -13,6 +13,7 @@ pub enum LocalAction {
         position: usize,
     },
     List,
+    Fetch,
 }
 
 #[derive(Debug, StructOpt, PartialEq)]
