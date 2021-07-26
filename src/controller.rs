@@ -1,7 +1,10 @@
+use crate::models::tasks::Tasks;
 use crate::service::google_api::GoogleApiClient;
 use crate::service::google_tasklist::ApiTaskList;
 use crate::service::google_tasks::ApiTasks;
 use anyhow;
+use console::Term;
+use dialoguer::{theme::ColorfulTheme, Input, Select};
 use reqwest::header;
 use std::env;
 
@@ -26,6 +29,34 @@ impl TaskManager {
     }
 
     pub fn add_task(&self) -> anyhow::Result<()> {
+        let title: String = Input::with_theme(&ColorfulTheme::default())
+            .with_prompt("Title of the task")
+            .with_initial_text("task")
+            .allow_empty(false)
+            .interact_text()?;
+        let notes: String = Input::with_theme(&ColorfulTheme::default())
+            .with_prompt("Note for task")
+            .with_initial_text("note")
+            .allow_empty(true)
+            .interact_text()?;
+        let items = vec!["No", "Yes"];
+        let completed = Select::with_theme(&ColorfulTheme::default())
+            .with_prompt("Is the task completed?")
+            .items(&items)
+            .default(0)
+            .interact_on_opt(&Term::stderr())?
+            .unwrap();
+        let status = if completed == 0 {
+            String::from("needsAction")
+        } else {
+            String::from("completed")
+        };
+        let task = Tasks::new(None, title, notes, status);
+        let resp = &self.client.add_task(task);
+        match resp {
+            Ok(task) => println!("Task {} has been created!", task.title),
+            Err(err) => println!("Some error hass occured! {}", err),
+        }
         Ok(())
     }
 

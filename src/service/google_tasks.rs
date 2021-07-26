@@ -10,9 +10,20 @@ pub trait ApiTasks {
     fn delete_task(&self, id: String) -> Result<(), Box<dyn std::error::Error>>;
     fn update_task(&self, updated_task: Tasks) -> Result<Tasks, Box<dyn std::error::Error>>;
     fn clear_completed_tasks(&self) -> Result<(), Box<dyn std::error::Error>>;
+    fn add_task(&self, task: Tasks) -> Result<Tasks, Box<dyn std::error::Error>>;
 }
 
 impl ApiTasks for GoogleApiClient {
+    fn add_task(&self, task: Tasks) -> Result<Tasks, Box<dyn std::error::Error>> {
+        let url = format_specific_task_url(
+            &self.base_url,
+            String::from("/lists"),
+            self.tasklist.as_ref().unwrap().to_string(),
+            String::from("tasks"),
+        );
+        let resp = self.client.post(url).json(&task).send()?.json::<Tasks>()?;
+        Ok(resp)
+    }
     fn fetch_all_tasks(
         &self,
         show_hidden: bool,
