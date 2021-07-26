@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Default, Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TaskResponse {
@@ -21,7 +23,8 @@ pub struct Tasks {
     pub self_link: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub position: Option<String>,
-    pub notes: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub notes: Option<String>,
     pub status: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub due: Option<String>,
@@ -37,9 +40,15 @@ impl Tasks {
             updated: None,
             self_link: None,
             position: None,
-            notes: notes,
+            notes: Some(notes),
             status: status,
             due: None,
         }
+    }
+}
+
+impl fmt::Display for Tasks {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:<50} [{}]", self.title, self.status)
     }
 }

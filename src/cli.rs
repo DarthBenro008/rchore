@@ -3,17 +3,36 @@ use structopt::StructOpt;
 
 #[derive(Debug, StructOpt, PartialEq)]
 pub enum LocalAction {
-    Add {
-        #[structopt()]
-        text: String,
-    },
+    // Add {
+    //     #[structopt()]
+    //     text: String,
+    // },
 
+    // Done {
+    //     #[structopt()]
+    //     position: usize,
+    // },
+    // List,
+    // Fetch,
+    List,
     Done {
         #[structopt()]
         position: usize,
     },
-    List,
-    Fetch,
+    Undo {
+        #[structopt()]
+        position: usize,
+    },
+    Delete {
+        #[structopt()]
+        position: usize,
+    },
+    Show {
+        #[structopt()]
+        position: usize,
+    },
+    Add,
+    Clear,
 }
 
 #[derive(Debug, StructOpt, PartialEq)]

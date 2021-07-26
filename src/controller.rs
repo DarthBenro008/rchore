@@ -5,6 +5,96 @@ use anyhow;
 use reqwest::header;
 use std::env;
 
+pub struct TaskManager {
+    pub client: GoogleApiClient,
+}
+
+impl TaskManager {
+    pub fn list_tasks(&self) -> anyhow::Result<()> {
+        let resp = &self.client.fetch_all_tasks(false);
+        match resp {
+            Ok(list) => {
+                let mut order = 1;
+                for tasks in &list.items {
+                    println!("{}: {}", order, tasks);
+                    order += 1;
+                }
+            }
+            Err(err) => println!("Some error occured in fetching tasks! {}", err),
+        }
+        Ok(())
+    }
+
+    pub fn add_task(&self) -> anyhow::Result<()> {
+        Ok(())
+    }
+
+    pub fn show_task(&self, pos: usize) -> anyhow::Result<()> {
+        let resp = &self.client.fetch_all_tasks(false);
+        match resp {
+            Ok(list) => {
+                let task = &list.items.get(pos - 1).unwrap().id.as_ref().unwrap();
+                let new_resp = &self.client.fetch_task(task.to_string());
+                match new_resp {
+                    Ok(task) => println!("Task: {}", task),
+                    Err(err) => println!("Some error has occured! {}", err),
+                }
+            }
+            Err(err) => println!("Some error occured in fetching tasks! {}", err),
+        }
+        Ok(())
+    }
+
+    pub fn complete_task(&self, pos: usize, is_completed: bool) -> anyhow::Result<()> {
+        let resp = &self.client.fetch_all_tasks(false);
+        match resp {
+            Ok(list) => {
+                let mut task = list.items.get(pos - 1).unwrap().clone();
+                task.status = if is_completed {
+                    String::from("completed")
+                } else {
+                    String::from("needsAction")
+                };
+                let new_resp = &self.client.update_task(task);
+                match new_resp {
+                    Ok(task) => {
+                        if is_completed {
+                            println!("Task {} marked as completed!", task.title)
+                        } else {
+                            println!("Task {} marked as incomplete!", task.title)
+                        }
+                    }
+                    Err(err) => println!("Some error occured {}", err),
+                }
+            }
+            Err(err) => println!("Some error occured in fetching tasks! {}", err),
+        }
+        Ok(())
+    }
+
+    pub fn clear_tasks(&self) -> anyhow::Result<()> {
+        let resp = &self.client.clear_completed_tasks();
+        match resp {
+            Ok(()) => println!("Cleared all the tasks!"),
+            Err(err) => println!("Some error occured in fetching tasks! {}", err),
+        }
+        Ok(())
+    }
+
+    pub fn delete_task(&self, pos: usize) -> anyhow::Result<()> {
+        let resp = &self.client.fetch_all_tasks(false);
+        match resp {
+            Ok(list) => {
+                let task = &list.items.get(pos - 1).unwrap().id.as_ref().unwrap();
+                let new_resp = &self.client.delete_task(task.to_string());
+                println!("{:#?}", new_resp);
+            }
+            Err(err) => println!("Some error occured in fetching tasks! {}", err),
+        }
+        Ok(())
+    }
+}
+
 pub fn test_fetch() -> anyhow::Result<()> {
     let token = env::var("ID").unwrap();
     let formatted_token = format!("{} {}", "Bearer ", token);
