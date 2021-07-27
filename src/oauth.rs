@@ -24,7 +24,7 @@ struct RefreshTokenExchange {
 #[serde()]
 struct RefreshTokenExchangeResponse {
     pub access_token: String,
-    pub expires_in: String,
+    pub expires_in: usize,
     pub scope: String,
     pub token_type: String,
 }

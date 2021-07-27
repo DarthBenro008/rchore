@@ -5,6 +5,8 @@ mod oauth;
 mod printer;
 mod secrets;
 mod service;
+#[macro_use]
+extern crate prettytable;
 
 use cli::{CommandLineArgs, Commands::*, GoogleAction::*, TaskAction::*};
 use dotenv::dotenv;

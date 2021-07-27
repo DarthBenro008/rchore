@@ -1,5 +1,5 @@
 use crate::models::tasks::Tasks;
-use crate::printer::{print_error, print_success, print_warning};
+use crate::printer::{print_error, print_success, print_task_table, print_warning};
 use crate::service::google_api::GoogleApiClient;
 use crate::service::google_tasks::ApiTasks;
 use anyhow;
@@ -16,11 +16,7 @@ impl TaskManager {
         match resp {
             Ok(list) => {
                 self.client.localdb.insert_tasks(list.items.clone())?;
-                let mut order = 1;
-                for tasks in &list.items {
-                    println!("{}: {}", order, tasks);
-                    order += 1;
-                }
+                print_task_table(&list.items);
             }
             Err(err) => print_error("fetching tasks", err),
         }

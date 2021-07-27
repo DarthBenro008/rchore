@@ -11,7 +11,7 @@ pub struct TaskListManager {
 }
 
 impl TaskListManager {
-    pub fn list_tasklist(&self) -> anyhow::Result<()> {
+    pub fn list_tasklist(&mut self) -> anyhow::Result<()> {
         let task = self.select_tasklist()?;
         self.client
             .localdb
@@ -55,7 +55,7 @@ impl TaskListManager {
         Ok(())
     }
 
-    pub fn update_tasklist(&self) -> anyhow::Result<()> {
+    pub fn update_tasklist(&mut self) -> anyhow::Result<()> {
         let mut tasklist = self.select_tasklist()?;
         let title: String = Input::with_theme(&ColorfulTheme::default())
             .with_prompt("Title of the task-list")
@@ -77,7 +77,7 @@ impl TaskListManager {
         Ok(())
     }
 
-    pub fn delete_tasklist(&self) -> anyhow::Result<()> {
+    pub fn delete_tasklist(&mut self) -> anyhow::Result<()> {
         let tasklist = self.select_tasklist()?;
         let selection: String = Input::with_theme(&ColorfulTheme::default())
             .with_prompt("Are you sure you want to delete this tasklist?")
@@ -100,15 +100,15 @@ impl TaskListManager {
         Ok(())
     }
 
-    fn get_tasklist(&self) -> anyhow::Result<Vec<TaskList>> {
-        let resp = &self.client.fetch_tasklist();
+    fn get_tasklist(&mut self) -> anyhow::Result<Vec<TaskList>> {
+        let resp = &self.client.fetch_tasklist(false);
         match resp {
             Ok(data) => Ok(data.items.clone()),
             Err(_err) => Err(anyhow!("Cannot fetch tasklists!")),
         }
     }
 
-    fn select_tasklist(&self) -> anyhow::Result<TaskList> {
+    fn select_tasklist(&mut self) -> anyhow::Result<TaskList> {
         let tasklists = &self.get_tasklist()?;
         let mut list = Vec::new();
         for tasklist in tasklists {

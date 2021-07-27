@@ -1,4 +1,6 @@
+use crate::models::tasks::Tasks;
 use console::{style, Term};
+use prettytable::{format, Table};
 
 pub fn print_error(action: &str, error: &std::boxed::Box<dyn std::error::Error>) {
     println!(
@@ -66,4 +68,21 @@ pub fn force_write(action: String) -> anyhow::Result<()> {
     term.clear_last_lines(3)?;
     print_ok(action);
     Ok(())
+}
+
+pub fn print_task_table(tasks: &Vec<Tasks>) {
+    let mut table = Table::new();
+    table.set_format(*format::consts::FORMAT_NO_BORDER);
+    table.add_row(row![cb => "Index", "Title", "Status", "Notes", "Due"]);
+    let mut order = 1;
+    for task in tasks {
+        let (title, status, notes, due) = task.get_sanitised_data();
+        if status == "Incomplete" {
+            table.add_row(row![c-> order,c-> title,cFr-> status,c-> notes,c-> due]);
+        } else {
+            table.add_row(row![c-> order,c-> title,cFg-> status,c-> notes,c-> due]);
+        }
+        order += 1;
+    }
+    table.printstd();
 }

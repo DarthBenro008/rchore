@@ -1,5 +1,5 @@
 use crate::oauth::oauth_login;
-use crate::printer::{print_error, print_red};
+use crate::printer::print_red;
 use crate::service::database_api::TasksDatabase;
 use crate::service::google_tasklist::ApiTaskList;
 use reqwest::header;
@@ -36,20 +36,7 @@ impl GoogleApiClient {
                 tasklist: None,
                 localdb: tasks_database,
             };
-            let resp = google_api_client.fetch_tasklist();
-            match resp {
-                Ok(task_response) => {
-                    let first_tasklist = task_response.items.get(0);
-                    match first_tasklist {
-                        Some(task_list) => {
-                            google_api_client.tasklist =
-                                Some(String::from(task_list.id.as_ref().unwrap()))
-                        }
-                        _ => print_red("fetching tasklist"),
-                    }
-                }
-                Err(err) => print_error("fetching tasklist", &err),
-            }
+            let _ = google_api_client.fetch_tasklist(true);
             return google_api_client;
         };
         let saved_default_tasklist_title = tasks_database.get_default_tasklist().unwrap();
