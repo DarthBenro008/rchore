@@ -37,7 +37,7 @@ impl ApiTaskList for GoogleApiClient {
         let del_url = format_task_url(&self.base_url, "/users/@me/lists".to_string(), id);
         let resp = self.client.delete(del_url).send()?;
         if resp.status() != 204 {
-            Err("Unable to delete list!")?
+            return Err("Unable to delete list!".into());
         }
         Ok(())
     }

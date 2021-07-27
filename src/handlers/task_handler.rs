@@ -14,7 +14,7 @@ impl TaskManager {
         let resp = &self.client.fetch_all_tasks(show_hidden);
         match resp {
             Ok(list) => {
-                &self.client.localdb.insert_tasks(list.items.clone())?;
+                self.client.localdb.insert_tasks(list.items.clone())?;
                 let mut order = 1;
                 for tasks in &list.items {
                     println!("{}: {}", order, tasks);

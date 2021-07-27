@@ -34,14 +34,14 @@ impl Tasks {
     pub fn new(id: Option<String>, title: String, notes: String, status: String) -> Tasks {
         Tasks {
             kind: "".to_string(),
-            id: id,
+            id,
             etag: None,
-            title: title,
+            title,
             updated: None,
             self_link: None,
             position: None,
             notes: Some(notes),
-            status: status,
+            status,
             due: None,
         }
     }

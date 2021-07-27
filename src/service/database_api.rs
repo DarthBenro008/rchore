@@ -20,11 +20,11 @@ impl TasksDatabase {
             Some(mut path) => {
                 path.push(".r_chore");
                 let db: sled::Db = sled::open(path).unwrap();
-                return TasksDatabase { db: db };
+                TasksDatabase { db }
             }
             None => {
                 let db: sled::Db = sled::open("rchore_db").unwrap();
-                return TasksDatabase { db: db };
+                TasksDatabase { db }
             }
         }
     }
@@ -79,10 +79,7 @@ impl TasksDatabase {
     }
 
     pub fn insert_default_tasklist(&self, id: String, title: String) -> anyhow::Result<()> {
-        let default_tasklist = DefaultTaskListDatabase {
-            title: title,
-            id: id,
-        };
+        let default_tasklist = DefaultTaskListDatabase { title, id };
         let bytes = bincode::serialize(&default_tasklist)?;
         self.db.insert("tasklist", bytes)?;
         Ok(())

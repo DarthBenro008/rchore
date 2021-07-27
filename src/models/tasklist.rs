@@ -30,7 +30,7 @@ impl TaskList {
             etag: None,
             updated: None,
             self_link: None,
-            title: title,
+            title,
         }
     }
 }

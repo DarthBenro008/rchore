@@ -55,14 +55,14 @@ fn main() -> anyhow::Result<()> {
 
 fn generate_task_manager(tasks_database: TasksDatabase) -> TaskManager {
     let google_api_client = GoogleApiClient::new(tasks_database);
-    return TaskManager {
+    TaskManager {
         client: google_api_client,
-    };
+    }
 }
 
 fn generate_tasklist_manager(tasks_database: TasksDatabase) -> TaskListManager {
     let google_api_client = GoogleApiClient::new(tasks_database);
-    return TaskListManager {
+    TaskListManager {
         client: google_api_client,
-    };
+    }
 }

@@ -25,7 +25,7 @@ impl ApiTasks for GoogleApiClient {
         let resp = self.client.post(url).json(&task).send()?;
         if resp.status() != 200 {
             get_new_access_token(&self.localdb)?;
-            &self.add_task(task);
+            self.add_task(task)?;
         }
         let tasks = resp.json::<Tasks>()?;
         Ok(tasks)
@@ -48,7 +48,7 @@ impl ApiTasks for GoogleApiClient {
         let resp = self.client.get(url).send()?;
         if resp.status() != 200 {
             get_new_access_token(&self.localdb)?;
-            &self.fetch_all_tasks(show_hidden);
+            self.fetch_all_tasks(show_hidden)?;
         }
         let tasks_response = resp.json::<TaskResponse>()?;
         Ok(tasks_response)
@@ -74,7 +74,7 @@ impl ApiTasks for GoogleApiClient {
         );
         let resp = self.client.delete(url).send()?;
         if resp.status() != 204 {
-            Err("Failed to call delete")?
+            return Err("Failed to call delete".into());
         }
         Ok(())
     }

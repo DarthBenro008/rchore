@@ -12,10 +12,9 @@ pub struct TaskListManager {
 impl TaskListManager {
     pub fn list_tasklist(&self) -> anyhow::Result<()> {
         let task = self.select_tasklist()?;
-        &self
-            .client
+        self.client
             .localdb
-            .insert_default_tasklist(task.id.unwrap(), task.title.clone());
+            .insert_default_tasklist(task.id.unwrap(), task.title.clone())?;
         println!("The tasklist {} has been set as default!", &task.title);
         Ok(())
     }
@@ -40,10 +39,10 @@ impl TaskListManager {
                 if completed == 0 {
                     println!("Awesome!")
                 } else {
-                    &self.client.localdb.insert_default_tasklist(
+                    self.client.localdb.insert_default_tasklist(
                         String::from(&value.id.as_ref().unwrap().to_string()),
                         String::from(&value.title),
-                    );
+                    )?;
                     println!("Default task-list set to {}", value.title)
                 };
             }
@@ -94,7 +93,7 @@ impl TaskListManager {
     fn get_tasklist(&self) -> anyhow::Result<Vec<TaskList>> {
         let resp = &self.client.fetch_tasklist();
         match resp {
-            Ok(data) => return Ok(data.items.clone()),
+            Ok(data) => Ok(data.items.clone()),
             Err(_err) => Err(anyhow!("Cannot fetch tasklists!")),
         }
     }

@@ -52,26 +52,25 @@ impl GoogleApiClient {
             return google_api_client;
         };
         let saved_default_tasklist_title = tasks_database.get_default_tasklist().unwrap();
-        let google_api_client = GoogleApiClient {
+        GoogleApiClient {
             base_url: String::from("https://tasks.googleapis.com/tasks/v1"),
             client: reqwest_client.unwrap(),
             tasklist: Some(saved_default_tasklist_title.0),
             localdb: tasks_database,
-        };
-        return google_api_client;
+        }
     }
 }
 
-pub fn format_base_url(base_url: &String, route: String) -> String {
+pub fn format_base_url(base_url: &str, route: String) -> String {
     return format!("{}{}", base_url, route);
 }
 
-pub fn format_task_url(base_url: &String, route: String, task_id: String) -> String {
+pub fn format_task_url(base_url: &str, route: String, task_id: String) -> String {
     return format!("{}/{}", format_base_url(&base_url, route), task_id);
 }
 
 pub fn format_specific_task_url(
-    base_url: &String,
+    base_url: &str,
     route: String,
     task_id: String,
     task_route: String,

@@ -1,6 +1,5 @@
 use crate::secrets::Secrets;
 use crate::service::database_api::TasksDatabase;
-use anyhow;
 use oauth2::basic::BasicClient;
 use oauth2::reqwest::http_client;
 use oauth2::{
@@ -67,15 +66,15 @@ fn create_oauth_client() -> anyhow::Result<BasicClient> {
     let client_id = secrets.client_id;
     let client_secret = secrets.client_secret;
     let client = BasicClient::new(
-        ClientId::new(String::from(client_id)),
-        Some(ClientSecret::new(String::from(client_secret))),
+        ClientId::new(client_id),
+        Some(ClientSecret::new(client_secret)),
         AuthUrl::new("https://accounts.google.com/o/oauth2/v2/auth".to_string())?,
         Some(TokenUrl::new(
             "https://oauth2.googleapis.com/token".to_string(),
         )?),
     )
     .set_redirect_uri(RedirectUrl::new("http://localhost:6555/".to_string())?);
-    return Ok(client);
+    Ok(client)
 }
 
 fn initiate_oauth(basic_client: &BasicClient) -> anyhow::Result<PkceCodeVerifier> {
@@ -84,7 +83,7 @@ fn initiate_oauth(basic_client: &BasicClient) -> anyhow::Result<PkceCodeVerifier
     let (auth_url, _) = basic_client
         .authorize_url(CsrfToken::new_random)
         .add_extra_param("access_type", "offline")
-        .add_extra_param("prompt", "consent")
+        .add_extra_param("prompt", "select_account")
         .add_scope(Scope::new(
             "https://www.googleapis.com/auth/tasks".to_string(),
         ))
@@ -104,52 +103,46 @@ fn get_token(
     pkce_verifier: PkceCodeVerifier,
 ) -> anyhow::Result<(String, String)> {
     let listener = TcpListener::bind("127.0.0.1:6555").unwrap();
-    for stream in listener.incoming() {
-        if let Ok(mut stream) = stream {
-            let code;
-            {
-                let mut reader = BufReader::new(&stream);
+    let mut stream: std::net::TcpStream = listener.incoming().flatten().next().unwrap();
+    let code;
 
-                let mut request_line = String::new();
-                reader.read_line(&mut request_line).unwrap();
+    let mut reader = BufReader::new(&stream);
 
-                let redirect_url = request_line.split_whitespace().nth(1).unwrap();
-                let url = Url::parse(&("http://localhost".to_string() + redirect_url)).unwrap();
+    let mut request_line = String::new();
+    reader.read_line(&mut request_line).unwrap();
 
-                let code_pair = url
-                    .query_pairs()
-                    .find(|pair| {
-                        let &(ref key, _) = pair;
-                        key == "code"
-                    })
-                    .unwrap();
+    let redirect_url = request_line.split_whitespace().nth(1).unwrap();
+    let url = Url::parse(&("http://localhost".to_string() + redirect_url)).unwrap();
 
-                let (_, value) = code_pair;
-                code = AuthorizationCode::new(value.into_owned());
-            }
+    let code_pair = url
+        .query_pairs()
+        .find(|pair| {
+            let &(ref key, _) = pair;
+            key == "code"
+        })
+        .unwrap();
 
-            let message =
-                "Awesome! RChore has been authenticated! You can close this window now :D";
-            let response = format!(
-                "HTTP/1.1 200 OK\r\ncontent-length: {}\r\n\r\n{}",
-                message.len(),
-                message
-            );
-            stream.write_all(response.as_bytes()).unwrap();
+    let (_, value) = code_pair;
+    code = AuthorizationCode::new(value.into_owned());
 
-            let token_response = basic_client
-                .exchange_code(code)
-                .set_pkce_verifier(pkce_verifier)
-                .request(http_client);
+    let message = "Awesome! RChore has been authenticated! You can close this window now :D";
+    let response = format!(
+        "HTTP/1.1 200 OK\r\ncontent-length: {}\r\n\r\n{}",
+        message.len(),
+        message
+    );
+    stream.write_all(response.as_bytes()).unwrap();
 
-            let result = token_response.unwrap();
-            let refresh_token = result.refresh_token().unwrap().secret();
+    let token_response = basic_client
+        .exchange_code(code)
+        .set_pkce_verifier(pkce_verifier)
+        .request(http_client);
 
-            return Ok((
-                result.access_token().secret().clone(),
-                refresh_token.clone(),
-            ));
-        }
-    }
-    return Ok((String::from(""), String::from("")));
+    let result = token_response.unwrap();
+    let refresh_token = result.refresh_token().unwrap().secret();
+
+    Ok((
+        result.access_token().secret().clone(),
+        refresh_token.clone(),
+    ))
 }
