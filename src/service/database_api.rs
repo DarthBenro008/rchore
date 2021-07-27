@@ -10,8 +10,17 @@ struct TasksList(Vec<Tasks>);
 
 impl TasksDatabase {
     pub fn new() -> TasksDatabase {
-        let db: sled::Db = sled::open("rchore_db").unwrap();
-        TasksDatabase { db: db }
+        match home::home_dir() {
+            Some(mut path) => {
+                path.push(".r_chore");
+                let db: sled::Db = sled::open(path).unwrap();
+                return TasksDatabase { db: db };
+            }
+            None => {
+                let db: sled::Db = sled::open("rchore_db").unwrap();
+                return TasksDatabase { db: db };
+            }
+        }
     }
 
     pub fn insert_tasks(&self, taskslist: Vec<Tasks>) -> anyhow::Result<()> {

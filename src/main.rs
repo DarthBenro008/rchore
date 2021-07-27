@@ -14,21 +14,10 @@ use service::google_api::GoogleApiClient;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
-fn default_local_journal() -> Option<PathBuf> {
-    home::home_dir().map(|mut path| {
-        path.push(".rchore.json");
-        path
-    })
-}
-
 fn main() -> anyhow::Result<()> {
     dotenv().ok();
 
     let CommandLineArgs { cmd, journal_file } = CommandLineArgs::from_args();
-
-    let _journal_file = journal_file
-        .or_else(default_local_journal)
-        .ok_or(anyhow!("Failed to find rchore journal"))?;
 
     let tasks_database = TasksDatabase::new();
 
