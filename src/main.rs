@@ -5,25 +5,23 @@ mod oauth;
 mod service;
 mod tasks;
 
-use anyhow::anyhow;
 use cli::{CommandLineArgs, Commands::*, GoogleAction::*, LocalAction::*};
 use controller::TaskManager;
 use dotenv::dotenv;
 use service::database_api::TasksDatabase;
 use service::google_api::GoogleApiClient;
-use std::path::PathBuf;
 use structopt::StructOpt;
 
 fn main() -> anyhow::Result<()> {
     dotenv().ok();
 
-    let CommandLineArgs { cmd, journal_file } = CommandLineArgs::from_args();
+    let CommandLineArgs { cmd } = CommandLineArgs::from_args();
 
     let tasks_database = TasksDatabase::new();
 
     match cmd {
         Tasks { action } => match action {
-            List => generate_task_manager(tasks_database).list_tasks()?,
+            List { force } => generate_task_manager(tasks_database).list_tasks(force)?,
             Done { position } => {
                 generate_task_manager(tasks_database).complete_task(position, true)?
             }

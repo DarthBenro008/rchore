@@ -10,8 +10,8 @@ pub struct TaskManager {
 }
 
 impl TaskManager {
-    pub fn list_tasks(&self) -> anyhow::Result<()> {
-        let resp = &self.client.fetch_all_tasks(false);
+    pub fn list_tasks(&self, show_hidden: bool) -> anyhow::Result<()> {
+        let resp = &self.client.fetch_all_tasks(show_hidden);
         match resp {
             Ok(list) => {
                 &self.client.localdb.insert_tasks(list.items.clone())?;

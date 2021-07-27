@@ -1,3 +1,4 @@
+use crate::oauth::oauth_login;
 use crate::service::database_api::TasksDatabase;
 use crate::service::google_tasklist::ApiTaskList;
 use reqwest::header;
@@ -11,6 +12,12 @@ pub struct GoogleApiClient {
 
 impl GoogleApiClient {
     pub fn new(tasks_database: TasksDatabase) -> GoogleApiClient {
+        if let Err(_err) = tasks_database.get_token() {
+            let res = oauth_login(&tasks_database);
+            if let Err(err) = res {
+                println!("Some error occured in logging you in! {}", err)
+            };
+        };
         let token = tasks_database.get_token().unwrap();
         let formatted_token = format!("{} {}", "Bearer ", token);
         let mut headers = header::HeaderMap::new();
