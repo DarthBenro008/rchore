@@ -12,13 +12,13 @@ pub struct GoogleApiClient {
 
 impl GoogleApiClient {
     pub fn new(tasks_database: TasksDatabase) -> GoogleApiClient {
-        if let Err(_err) = tasks_database.get_token() {
+        if let Err(_err) = &tasks_database.get_token() {
             let res = oauth_login(&tasks_database);
             if let Err(err) = res {
                 println!("Some error occured in logging you in! {}", err)
             };
         };
-        let token = tasks_database.get_token().unwrap();
+        let token = &tasks_database.get_token().unwrap();
         let formatted_token = format!("{} {}", "Bearer ", token);
         let mut headers = header::HeaderMap::new();
         headers.insert(
@@ -28,26 +28,36 @@ impl GoogleApiClient {
         let reqwest_client = reqwest::blocking::Client::builder()
             .default_headers(headers)
             .build();
-        let mut google_api_client = GoogleApiClient {
+        if let Err(_err) = &tasks_database.get_default_tasklist() {
+            let mut google_api_client = GoogleApiClient {
+                base_url: String::from("https://tasks.googleapis.com/tasks/v1"),
+                client: reqwest_client.unwrap(),
+                tasklist: None,
+                localdb: tasks_database,
+            };
+            let resp = google_api_client.fetch_tasklist();
+            match resp {
+                Ok(task_response) => {
+                    let first_tasklist = task_response.items.get(0);
+                    match first_tasklist {
+                        Some(task_list) => {
+                            google_api_client.tasklist =
+                                Some(String::from(task_list.id.as_ref().unwrap()))
+                        }
+                        _ => println!("Some error occured in fetching tasklists"),
+                    }
+                }
+                _ => println!("{:#?}", resp),
+            }
+            return google_api_client;
+        };
+        let saved_default_tasklist_title = tasks_database.get_default_tasklist().unwrap();
+        let google_api_client = GoogleApiClient {
             base_url: String::from("https://tasks.googleapis.com/tasks/v1"),
             client: reqwest_client.unwrap(),
-            tasklist: None,
+            tasklist: Some(saved_default_tasklist_title.0),
             localdb: tasks_database,
         };
-        let resp = google_api_client.fetch_tasklist();
-        match resp {
-            Ok(task_response) => {
-                let first_tasklist = task_response.items.get(0);
-                match first_tasklist {
-                    Some(task_list) => {
-                        google_api_client.tasklist =
-                            Some(String::from(task_list.id.as_ref().unwrap()))
-                    }
-                    _ => println!("Some error occured in fetching tasklists"),
-                }
-            }
-            _ => println!("{:#?}", resp),
-        }
         return google_api_client;
     }
 }
