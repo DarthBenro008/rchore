@@ -1,3 +1,4 @@
+use chrono::DateTime;
 use console::style;
 use std::fmt;
 
@@ -24,12 +25,11 @@ pub struct Tasks {
     pub self_link: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub position: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub notes: Option<String>,
-    pub status: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
-    pub due: Option<String>,
+    pub notes: String,
+    pub status: String,
+    #[serde(default)]
+    pub due: String,
 }
 
 impl Tasks {
@@ -42,9 +42,9 @@ impl Tasks {
             updated: None,
             self_link: None,
             position: None,
-            notes: Some(notes),
+            notes,
             status,
-            due: None,
+            due: String::from(""),
         }
     }
 
@@ -54,15 +54,17 @@ impl Tasks {
         } else {
             String::from("Completed")
         };
-        let due = if self.due == None {
+        let due = if self.due == "" {
             String::from("Not specified")
         } else {
-            String::from(self.due.as_ref().unwrap())
+            let datetime = DateTime::parse_from_rfc3339(&self.due).unwrap();
+            let newdate = datetime.format("%d/%m/%Y");
+            format!("{}", newdate)
         };
-        let notes = if self.notes == None {
+        let notes = if self.notes == "" {
             String::from("No note was added")
         } else {
-            String::from(self.notes.as_ref().unwrap())
+            String::from(&self.notes)
         };
         (String::from(&self.title), status, notes, due)
     }
@@ -75,15 +77,15 @@ impl fmt::Display for Tasks {
         } else {
             String::from("Completed")
         };
-        let due = if self.due == None {
+        let due = if self.due == "" {
             String::from("Not specified")
         } else {
-            String::from(self.due.as_ref().unwrap())
+            String::from(&self.due)
         };
-        let notes = if self.notes == None {
+        let notes = if self.notes == "" {
             String::from("No note added")
         } else {
-            String::from(self.notes.as_ref().unwrap())
+            String::from(&self.notes)
         };
         write!(
             f,
