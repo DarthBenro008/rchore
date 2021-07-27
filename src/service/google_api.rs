@@ -47,6 +47,18 @@ impl GoogleApiClient {
             localdb: tasks_database,
         }
     }
+    pub fn new_token_client(token: String) -> reqwest::blocking::Client {
+        let formatted_token = format!("{} {}", "Bearer ", token);
+        let mut headers = header::HeaderMap::new();
+        headers.insert(
+            header::AUTHORIZATION,
+            header::HeaderValue::from_str(&formatted_token).unwrap(),
+        );
+        reqwest::blocking::Client::builder()
+            .default_headers(headers)
+            .build()
+            .unwrap()
+    }
 }
 
 pub fn format_base_url(base_url: &str, route: String) -> String {

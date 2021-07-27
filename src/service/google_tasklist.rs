@@ -4,8 +4,10 @@ use crate::oauth::get_new_access_token;
 use crate::printer::print_red;
 
 pub trait ApiTaskList {
-    fn fetch_tasklist(&mut self, default: bool)
-        -> Result<TaskListResponse, Box<dyn std::error::Error>>;
+    fn fetch_tasklist(
+        &mut self,
+        default: bool,
+    ) -> Result<TaskListResponse, Box<dyn std::error::Error>>;
     fn create_tasklist(&self, title: String) -> Result<TaskList, Box<dyn std::error::Error>>;
     fn delete_tasklist(&self, id: String) -> Result<(), Box<dyn std::error::Error>>;
     fn update_tasklist(
@@ -23,8 +25,10 @@ impl ApiTaskList for GoogleApiClient {
         let url = format_base_url(&self.base_url, String::from("/users/@me/lists"));
         let resp = self.client.get(url).send()?;
         if resp.status() != 200 {
-            println!("hit!!");
             get_new_access_token(&self.localdb)?;
+            let token = self.localdb.get_token()?;
+            let new_client = GoogleApiClient::new_token_client(token);
+            self.client = new_client;
             self.fetch_tasklist(false)?;
         }
         let task_list = resp.json::<TaskListResponse>()?;
