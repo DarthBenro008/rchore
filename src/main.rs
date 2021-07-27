@@ -3,7 +3,6 @@ mod controller;
 mod models;
 mod oauth;
 mod service;
-mod tasks;
 
 use cli::{CommandLineArgs, Commands::*, GoogleAction::*, LocalAction::*};
 use controller::TaskManager;
