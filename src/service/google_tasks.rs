@@ -62,7 +62,9 @@ impl ApiTasks for GoogleApiClient {
             format!("{}/{}", "tasks", id),
         );
         let resp = self.client.delete(url).send()?;
-        println!("{:#?}", resp);
+        if resp.status() != 204 {
+            Err("Failed to call delete")?
+        }
         Ok(())
     }
 

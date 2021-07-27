@@ -26,7 +26,7 @@ pub struct Tasks {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub notes: Option<String>,
     pub status: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", skip_deserializing)]
     pub due: Option<String>,
 }
 

@@ -9,10 +9,10 @@ use anyhow::anyhow;
 use cli::{CommandLineArgs, Commands::*, GoogleAction::*, LocalAction::*};
 use controller::TaskManager;
 use dotenv::dotenv;
+use service::database_api::TasksDatabase;
 use service::google_api::GoogleApiClient;
 use std::path::PathBuf;
 use structopt::StructOpt;
-use tasks::Task;
 
 fn default_local_journal() -> Option<PathBuf> {
     home::home_dir().map(|mut path| {
@@ -26,32 +26,36 @@ fn main() -> anyhow::Result<()> {
 
     let CommandLineArgs { cmd, journal_file } = CommandLineArgs::from_args();
 
-    let journal_file = journal_file
+    let _journal_file = journal_file
         .or_else(default_local_journal)
         .ok_or(anyhow!("Failed to find rchore journal"))?;
 
-    let google_api_client = GoogleApiClient::new();
-    let task_manager = TaskManager {
-        client: google_api_client,
-    };
+    let tasks_database = TasksDatabase::new();
 
     match cmd {
         Tasks { action } => match action {
-            // Add { text } => tasks::add_task(journal_file, Task::new(text))?,
-            // Done { position } => tasks::complete_task(journal_file, position)?,
-            // List => tasks::list_tasks(journal_file)?,
-            // Fetch => controller::test_fetch()?,
-            List => task_manager.list_tasks()?,
-            Done { position } => task_manager.complete_task(position, true)?,
-            Delete { position } => task_manager.delete_task(position)?,
-            Show { position } => task_manager.show_task(position)?,
-            Add => task_manager.add_task()?,
-            Clear => task_manager.clear_tasks()?,
-            Undo { position } => task_manager.complete_task(position, false)?,
+            List => generate_task_manager(tasks_database).list_tasks()?,
+            Done { position } => {
+                generate_task_manager(tasks_database).complete_task(position, true)?
+            }
+            Delete { position } => generate_task_manager(tasks_database).delete_task(position)?,
+            Show { position } => generate_task_manager(tasks_database).show_task(position)?,
+            Add => generate_task_manager(tasks_database).add_task()?,
+            Clear => generate_task_manager(tasks_database).clear_tasks()?,
+            Undo { position } => {
+                generate_task_manager(tasks_database).complete_task(position, false)?
+            }
         },
         Google { action } => match action {
-            Login => oauth::oauth_login()?,
+            Login => oauth::oauth_login(&tasks_database)?,
         },
     }
     Ok(())
+}
+
+fn generate_task_manager(tasks_database: TasksDatabase) -> TaskManager {
+    let google_api_client = GoogleApiClient::new(tasks_database);
+    return TaskManager {
+        client: google_api_client,
+    };
 }

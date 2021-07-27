@@ -1,12 +1,9 @@
 use crate::models::tasks::Tasks;
 use crate::service::google_api::GoogleApiClient;
-use crate::service::google_tasklist::ApiTaskList;
 use crate::service::google_tasks::ApiTasks;
 use anyhow;
 use console::Term;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
-use reqwest::header;
-use std::env;
 
 pub struct TaskManager {
     pub client: GoogleApiClient,
@@ -17,6 +14,7 @@ impl TaskManager {
         let resp = &self.client.fetch_all_tasks(false);
         match resp {
             Ok(list) => {
+                &self.client.localdb.insert_tasks(list.items.clone())?;
                 let mut order = 1;
                 for tasks in &list.items {
                     println!("{}: {}", order, tasks);
@@ -61,44 +59,34 @@ impl TaskManager {
     }
 
     pub fn show_task(&self, pos: usize) -> anyhow::Result<()> {
-        let resp = &self.client.fetch_all_tasks(false);
-        match resp {
-            Ok(list) => {
-                let task = &list.items.get(pos - 1).unwrap().id.as_ref().unwrap();
-                let new_resp = &self.client.fetch_task(task.to_string());
-                match new_resp {
-                    Ok(task) => println!("Task: {}", task),
-                    Err(err) => println!("Some error has occured! {}", err),
-                }
-            }
-            Err(err) => println!("Some error occured in fetching tasks! {}", err),
+        let resp = &self.client.localdb.get_data()?;
+        let task = resp.get(pos - 1).unwrap().id.as_ref().unwrap();
+        let new_resp = &self.client.fetch_task(task.to_string());
+        match new_resp {
+            Ok(task) => println!("Task: {}", task),
+            Err(err) => println!("Some error has occured! {}", err),
         }
         Ok(())
     }
 
     pub fn complete_task(&self, pos: usize, is_completed: bool) -> anyhow::Result<()> {
-        let resp = &self.client.fetch_all_tasks(false);
-        match resp {
-            Ok(list) => {
-                let mut task = list.items.get(pos - 1).unwrap().clone();
-                task.status = if is_completed {
-                    String::from("completed")
+        let resp = &self.client.localdb.get_data()?;
+        let mut task = resp.get(pos - 1).unwrap().clone();
+        task.status = if is_completed {
+            String::from("completed")
+        } else {
+            String::from("needsAction")
+        };
+        let new_resp = &self.client.update_task(task);
+        match new_resp {
+            Ok(task) => {
+                if is_completed {
+                    println!("Task {} marked as completed!", task.title)
                 } else {
-                    String::from("needsAction")
-                };
-                let new_resp = &self.client.update_task(task);
-                match new_resp {
-                    Ok(task) => {
-                        if is_completed {
-                            println!("Task {} marked as completed!", task.title)
-                        } else {
-                            println!("Task {} marked as incomplete!", task.title)
-                        }
-                    }
-                    Err(err) => println!("Some error occured {}", err),
+                    println!("Task {} marked as incomplete!", task.title)
                 }
             }
-            Err(err) => println!("Some error occured in fetching tasks! {}", err),
+            Err(err) => println!("Some error occured {}", err),
         }
         Ok(())
     }
@@ -113,51 +101,15 @@ impl TaskManager {
     }
 
     pub fn delete_task(&self, pos: usize) -> anyhow::Result<()> {
-        let resp = &self.client.fetch_all_tasks(false);
-        match resp {
-            Ok(list) => {
-                let task = &list.items.get(pos - 1).unwrap().id.as_ref().unwrap();
-                let new_resp = &self.client.delete_task(task.to_string());
-                println!("{:#?}", new_resp);
-            }
-            Err(err) => println!("Some error occured in fetching tasks! {}", err),
+        let resp = &self.client.localdb.get_data()?;
+        let task = resp.get(pos - 1).unwrap();
+        let new_resp = &self
+            .client
+            .delete_task(task.id.as_ref().unwrap().to_string());
+        match new_resp {
+            Ok(_res) => println!("Task {} has been deleted!", &task.title),
+            Err(err) => println!("Error deleting task {}", err),
         }
         Ok(())
     }
-}
-
-pub fn test_fetch() -> anyhow::Result<()> {
-    let token = env::var("ID").unwrap();
-    let formatted_token = format!("{} {}", "Bearer ", token);
-    println!("{}", formatted_token);
-    let mut headers = header::HeaderMap::new();
-    headers.insert(
-        header::AUTHORIZATION,
-        header::HeaderValue::from_str(&formatted_token).unwrap(),
-    );
-    let reqwest_client = reqwest::blocking::Client::builder()
-        .default_headers(headers)
-        .build()?;
-    let mut google_api_client = GoogleApiClient {
-        base_url: String::from("https://tasks.googleapis.com/tasks/v1"),
-        client: reqwest_client,
-        tasklist: None,
-    };
-    let resp = google_api_client.fetch_tasklist();
-    match resp {
-        Ok(task_response) => {
-            let first_tasklist = task_response.items.get(0);
-            match first_tasklist {
-                Some(task_list) => {
-                    google_api_client.tasklist = Some(String::from(task_list.id.as_ref().unwrap()))
-                }
-                _ => println!("Some error occured in fetching tasklists"),
-            }
-        }
-        _ => println!("{:#?}", resp),
-    }
-    let new_resp = google_api_client
-        .fetch_task("MDI5MDM4MTYwNzQzNjY1MTk0NTc6MDoyNzY5NTcwMTEzOTYwNzE4".to_string());
-    println!("{:#?}", new_resp);
-    Ok(())
 }

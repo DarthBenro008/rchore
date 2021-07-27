@@ -1,18 +1,18 @@
+use crate::service::database_api::TasksDatabase;
 use crate::service::google_tasklist::ApiTaskList;
 use reqwest::header;
-use std::env;
 
 pub struct GoogleApiClient {
     pub client: reqwest::blocking::Client,
     pub base_url: String,
     pub tasklist: Option<String>,
+    pub localdb: TasksDatabase,
 }
 
 impl GoogleApiClient {
-    pub fn new() -> GoogleApiClient {
-        let token = env::var("ID").unwrap();
+    pub fn new(tasks_database: TasksDatabase) -> GoogleApiClient {
+        let token = tasks_database.get_token().unwrap();
         let formatted_token = format!("{} {}", "Bearer ", token);
-        println!("{}", formatted_token);
         let mut headers = header::HeaderMap::new();
         headers.insert(
             header::AUTHORIZATION,
@@ -25,6 +25,7 @@ impl GoogleApiClient {
             base_url: String::from("https://tasks.googleapis.com/tasks/v1"),
             client: reqwest_client.unwrap(),
             tasklist: None,
+            localdb: tasks_database,
         };
         let resp = google_api_client.fetch_tasklist();
         match resp {

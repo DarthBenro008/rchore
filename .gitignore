@@ -1,3 +1,4 @@
 /target
 *.journal
 .env
+/rchore_db

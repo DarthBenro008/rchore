@@ -1,3 +1,4 @@
+use crate::service::database_api::TasksDatabase;
 use anyhow;
 use oauth2::basic::BasicClient;
 use oauth2::reqwest::http_client;
@@ -10,11 +11,11 @@ use std::io::{BufRead, BufReader, Write};
 use std::net::TcpListener;
 use url::Url;
 
-pub fn oauth_login() -> anyhow::Result<()> {
+pub fn oauth_login(tasks_database: &TasksDatabase) -> anyhow::Result<()> {
     let client = create_oauth_client()?;
     let pkce_code_verification = initiate_oauth(&client)?;
     let token = get_token(&client, pkce_code_verification)?;
-    println!("{}", token);
+    tasks_database.insert_token(token)?;
     return Ok(());
 }
 
