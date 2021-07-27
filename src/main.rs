@@ -2,6 +2,7 @@ mod cli;
 mod handlers;
 mod models;
 mod oauth;
+mod secrets;
 mod service;
 
 use cli::{CommandLineArgs, Commands::*, GoogleAction::*, TaskAction::*};

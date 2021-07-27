@@ -62,6 +62,22 @@ impl TasksDatabase {
         }
     }
 
+    pub fn insert_refresh_token(&self, token: String) -> anyhow::Result<()> {
+        let bytes = bincode::serialize(&token)?;
+        self.db.insert("r_token", bytes)?;
+        Ok(())
+    }
+
+    pub fn get_refresh_token(&self) -> anyhow::Result<String> {
+        match self.db.get("r_token")? {
+            Some(bytes) => {
+                let token: String = bincode::deserialize(&bytes)?;
+                Ok(token)
+            }
+            None => Err(anyhow!("Error!")),
+        }
+    }
+
     pub fn insert_default_tasklist(&self, id: String, title: String) -> anyhow::Result<()> {
         let default_tasklist = DefaultTaskListDatabase {
             title: title,

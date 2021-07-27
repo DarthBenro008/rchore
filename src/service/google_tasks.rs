@@ -1,5 +1,6 @@
 use super::google_api::{format_specific_task_url, GoogleApiClient};
 use crate::models::tasks::{TaskResponse, Tasks};
+use crate::oauth::get_new_access_token;
 
 pub trait ApiTasks {
     fn fetch_all_tasks(
@@ -21,8 +22,13 @@ impl ApiTasks for GoogleApiClient {
             self.tasklist.as_ref().unwrap().to_string(),
             String::from("tasks"),
         );
-        let resp = self.client.post(url).json(&task).send()?.json::<Tasks>()?;
-        Ok(resp)
+        let resp = self.client.post(url).json(&task).send()?;
+        if resp.status() != 200 {
+            get_new_access_token(&self.localdb)?;
+            &self.add_task(task);
+        }
+        let tasks = resp.json::<Tasks>()?;
+        Ok(tasks)
     }
     fn fetch_all_tasks(
         &self,
@@ -39,8 +45,13 @@ impl ApiTasks for GoogleApiClient {
             self.tasklist.as_ref().unwrap().to_string(),
             query_params,
         );
-        let resp = self.client.get(url).send()?.json::<TaskResponse>()?;
-        Ok(resp)
+        let resp = self.client.get(url).send()?;
+        if resp.status() != 200 {
+            get_new_access_token(&self.localdb)?;
+            &self.fetch_all_tasks(show_hidden);
+        }
+        let tasks_response = resp.json::<TaskResponse>()?;
+        Ok(tasks_response)
     }
 
     fn fetch_task(&self, id: String) -> Result<Tasks, Box<dyn std::error::Error>> {
