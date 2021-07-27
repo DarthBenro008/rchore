@@ -1,12 +1,13 @@
 mod cli;
-mod controller;
+mod handlers;
 mod models;
 mod oauth;
 mod service;
 
-use cli::{CommandLineArgs, Commands::*, GoogleAction::*, LocalAction::*};
-use controller::TaskManager;
+use cli::{CommandLineArgs, Commands::*, GoogleAction::*, TaskAction::*};
 use dotenv::dotenv;
+use handlers::task_handler::TaskManager;
+use handlers::tasklist_handler::TaskListManager;
 use service::database_api::TasksDatabase;
 use service::google_api::GoogleApiClient;
 use structopt::StructOpt;
@@ -32,6 +33,18 @@ fn main() -> anyhow::Result<()> {
                 generate_task_manager(tasks_database).complete_task(position, false)?
             }
         },
+        TaskList { action } => match action {
+            cli::TaskListAction::List => {
+                generate_tasklist_manager(tasks_database).list_tasklist()?
+            }
+            cli::TaskListAction::Delete => {
+                generate_tasklist_manager(tasks_database).delete_tasklist()?
+            }
+            cli::TaskListAction::Add => generate_tasklist_manager(tasks_database).add_tasklist()?,
+            cli::TaskListAction::Update => {
+                generate_tasklist_manager(tasks_database).update_tasklist()?
+            }
+        },
         Google { action } => match action {
             Login => oauth::oauth_login(&tasks_database)?,
         },
@@ -42,6 +55,13 @@ fn main() -> anyhow::Result<()> {
 fn generate_task_manager(tasks_database: TasksDatabase) -> TaskManager {
     let google_api_client = GoogleApiClient::new(tasks_database);
     return TaskManager {
+        client: google_api_client,
+    };
+}
+
+fn generate_tasklist_manager(tasks_database: TasksDatabase) -> TaskListManager {
+    let google_api_client = GoogleApiClient::new(tasks_database);
+    return TaskListManager {
         client: google_api_client,
     };
 }

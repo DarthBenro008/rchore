@@ -1,7 +1,7 @@
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt, PartialEq)]
-pub enum LocalAction {
+pub enum TaskAction {
     List {
         #[structopt(short, long)]
         force: bool,
@@ -27,6 +27,14 @@ pub enum LocalAction {
 }
 
 #[derive(Debug, StructOpt, PartialEq)]
+pub enum TaskListAction {
+    List,
+    Delete,
+    Add,
+    Update,
+}
+
+#[derive(Debug, StructOpt, PartialEq)]
 pub enum GoogleAction {
     Login,
 }
@@ -42,10 +50,14 @@ pub struct CommandLineArgs {
 pub enum Commands {
     Tasks {
         #[structopt(subcommand)]
-        action: LocalAction,
+        action: TaskAction,
     },
     Google {
         #[structopt(subcommand)]
         action: GoogleAction,
+    },
+    TaskList {
+        #[structopt(subcommand)]
+        action: TaskListAction,
     },
 }

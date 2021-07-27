@@ -3,9 +3,13 @@ use crate::models::tasklist::{TaskList, TaskListResponse};
 
 pub trait ApiTaskList {
     fn fetch_tasklist(&self) -> Result<TaskListResponse, Box<dyn std::error::Error>>;
-    fn create_tasklist(&self, title: String) -> Result<(), Box<dyn std::error::Error>>;
+    fn create_tasklist(&self, title: String) -> Result<TaskList, Box<dyn std::error::Error>>;
     fn delete_tasklist(&self, id: String) -> Result<(), Box<dyn std::error::Error>>;
-    fn update_tasklist(&self, id: String, title: String) -> Result<(), Box<dyn std::error::Error>>;
+    fn update_tasklist(
+        &self,
+        id: String,
+        title: String,
+    ) -> Result<TaskList, Box<dyn std::error::Error>>;
 }
 
 impl ApiTaskList for GoogleApiClient {
@@ -15,7 +19,7 @@ impl ApiTaskList for GoogleApiClient {
         Ok(resp)
     }
 
-    fn create_tasklist(&self, title: String) -> Result<(), Box<dyn std::error::Error>> {
+    fn create_tasklist(&self, title: String) -> Result<TaskList, Box<dyn std::error::Error>> {
         let new_task_list = TaskList::new(title);
         let resp = self
             .client
@@ -24,23 +28,33 @@ impl ApiTaskList for GoogleApiClient {
                 String::from("/users/@me/lists"),
             ))
             .json(&new_task_list)
-            .send()?;
-        println!("{:#?}", resp);
-        Ok(())
+            .send()?
+            .json::<TaskList>()?;
+        Ok(resp)
     }
 
     fn delete_tasklist(&self, id: String) -> Result<(), Box<dyn std::error::Error>> {
         let del_url = format_task_url(&self.base_url, "/users/@me/lists".to_string(), id);
         let resp = self.client.delete(del_url).send()?;
-        println!("{:#?}", resp);
+        if resp.status() != 204 {
+            Err("Unable to delete list!")?
+        }
         Ok(())
     }
 
-    fn update_tasklist(&self, id: String, title: String) -> Result<(), Box<dyn std::error::Error>> {
+    fn update_tasklist(
+        &self,
+        id: String,
+        title: String,
+    ) -> Result<TaskList, Box<dyn std::error::Error>> {
         let patch_url = format_task_url(&self.base_url, "/users/@me/lists".to_string(), id);
         let task_list = TaskList::new(title);
-        let resp = self.client.patch(patch_url).json(&task_list).send()?;
-        println!("{:#?}", resp);
-        Ok(())
+        let resp = self
+            .client
+            .patch(patch_url)
+            .json(&task_list)
+            .send()?
+            .json::<TaskList>()?;
+        Ok(resp)
     }
 }
