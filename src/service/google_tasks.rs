@@ -104,7 +104,9 @@ impl ApiTasks for GoogleApiClient {
             String::from("clear"),
         );
         let resp = self.client.post(url).body("").send()?;
-        println!("{:#?}", resp);
+        if resp.status() != 204 {
+            return Err("Failed to clear".into());
+        }
         Ok(())
     }
 }

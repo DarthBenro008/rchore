@@ -1,3 +1,4 @@
+use crate::printer::{force_write, url_print};
 use crate::secrets::Secrets;
 use crate::service::database_api::TasksDatabase;
 use oauth2::basic::BasicClient;
@@ -34,6 +35,7 @@ pub fn oauth_login(tasks_database: &TasksDatabase) -> anyhow::Result<()> {
     let (token, r_token) = get_token(&client, pkce_code_verification)?;
     tasks_database.insert_token(token)?;
     tasks_database.insert_refresh_token(r_token)?;
+    force_write("Logged in sucessfully! Welcome to rchore :)".to_string())?;
     Ok(())
 }
 
@@ -90,10 +92,7 @@ fn initiate_oauth(basic_client: &BasicClient) -> anyhow::Result<PkceCodeVerifier
         .set_pkce_challenge(pkce_challenge)
         .url();
 
-    println!(
-        "Open the following link in your browser to authenticate yourself: \n\n {}",
-        auth_url
-    );
+    url_print(auth_url);
 
     Ok(pkce_verifier)
 }

@@ -1,4 +1,5 @@
 use crate::models::tasklist::TaskList;
+use crate::printer::{print_error, print_ok, print_warning};
 use crate::service::google_api::GoogleApiClient;
 use crate::service::google_tasklist::ApiTaskList;
 use anyhow::anyhow;
@@ -15,7 +16,10 @@ impl TaskListManager {
         self.client
             .localdb
             .insert_default_tasklist(task.id.unwrap(), task.title.clone())?;
-        println!("The tasklist {} has been set as default!", &task.title);
+        print_ok(format!(
+            "The tasklist {} has been set as default!",
+            &task.title
+        ));
         Ok(())
     }
 
@@ -28,7 +32,7 @@ impl TaskListManager {
         let resp = &self.client.create_tasklist(title);
         match resp {
             Ok(value) => {
-                println!("Task List {} created!", &value.title);
+                print_ok(format!("Task List {} created!", &value.title));
                 let items = vec!["No", "Yes"];
                 let completed = Select::with_theme(&ColorfulTheme::default())
                     .with_prompt("Do you want to make this the default tasklist?")
@@ -37,16 +41,16 @@ impl TaskListManager {
                     .interact_on_opt(&Term::stderr())?
                     .unwrap();
                 if completed == 0 {
-                    println!("Awesome!")
+                    print_ok("Ok, did not set it as default".to_string());
                 } else {
                     self.client.localdb.insert_default_tasklist(
                         String::from(&value.id.as_ref().unwrap().to_string()),
                         String::from(&value.title),
                     )?;
-                    println!("Default task-list set to {}", value.title)
+                    print_ok(format!("Default task-list set to {}", value.title))
                 };
             }
-            Err(err) => println!("Some error occured while creating tasklist due to {}", err),
+            Err(err) => print_error("creating tasklist", err),
         }
         Ok(())
     }
@@ -64,8 +68,11 @@ impl TaskListManager {
             String::from(&tasklist.title),
         );
         match resp {
-            Ok(value) => println!("Task List {} updated to {}", tasklist.title, value.title),
-            Err(err) => println!("Some error occured while updating tasklist due to {}", err),
+            Ok(value) => print_ok(format!(
+                "Task List {} updated to {}",
+                tasklist.title, value.title
+            )),
+            Err(err) => print_error("updating tasklist", err),
         }
         Ok(())
     }
@@ -79,12 +86,15 @@ impl TaskListManager {
             .allow_empty(false)
             .interact_text()?;
         if selection == "n" {
-            println!("Aborting delete of tasklist")
+            print_warning("Aborting delete of tasklist".to_string())
         } else {
             let resp = &self.client.delete_tasklist(tasklist.id.unwrap());
             match resp {
-                Ok(_) => println!("Task-List {} deleted successfully!", tasklist.title),
-                Err(err) => println!("Error deleting tasklist due to {}", err),
+                Ok(_) => print_ok(format!(
+                    "Task-List {} deleted successfully!",
+                    tasklist.title
+                )),
+                Err(err) => print_error("deleting tasklist", err),
             }
         }
         Ok(())

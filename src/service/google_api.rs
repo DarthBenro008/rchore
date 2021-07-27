@@ -1,4 +1,5 @@
 use crate::oauth::oauth_login;
+use crate::printer::{print_error, print_red};
 use crate::service::database_api::TasksDatabase;
 use crate::service::google_tasklist::ApiTaskList;
 use reqwest::header;
@@ -14,8 +15,8 @@ impl GoogleApiClient {
     pub fn new(tasks_database: TasksDatabase) -> GoogleApiClient {
         if let Err(_err) = &tasks_database.get_token() {
             let res = oauth_login(&tasks_database);
-            if let Err(err) = res {
-                println!("Some error occured in logging you in! {}", err)
+            if let Err(_err) = res {
+                print_red("logging you in, please try again");
             };
         };
         let token = &tasks_database.get_token().unwrap();
@@ -44,10 +45,10 @@ impl GoogleApiClient {
                             google_api_client.tasklist =
                                 Some(String::from(task_list.id.as_ref().unwrap()))
                         }
-                        _ => println!("Some error occured in fetching tasklists"),
+                        _ => print_red("fetching tasklist"),
                     }
                 }
-                _ => println!("{:#?}", resp),
+                Err(err) => print_error("fetching tasklist", &err),
             }
             return google_api_client;
         };

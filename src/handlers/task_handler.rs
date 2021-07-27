@@ -1,4 +1,5 @@
 use crate::models::tasks::Tasks;
+use crate::printer::{print_error, print_success, print_warning};
 use crate::service::google_api::GoogleApiClient;
 use crate::service::google_tasks::ApiTasks;
 use anyhow;
@@ -21,7 +22,7 @@ impl TaskManager {
                     order += 1;
                 }
             }
-            Err(err) => println!("Some error occured in fetching tasks! {}", err),
+            Err(err) => print_error("fetching tasks", err),
         }
         Ok(())
     }
@@ -52,8 +53,8 @@ impl TaskManager {
         let task = Tasks::new(None, title, notes, status);
         let resp = &self.client.add_task(task);
         match resp {
-            Ok(task) => println!("Task {} has been created!", task.title),
-            Err(err) => println!("Some error hass occured! {}", err),
+            Ok(task) => print_success(format!("Task {} has been created!", task.title)),
+            Err(err) => print_error("creating task", err),
         }
         Ok(())
     }
@@ -63,8 +64,8 @@ impl TaskManager {
         let task = resp.get(pos - 1).unwrap().id.as_ref().unwrap();
         let new_resp = &self.client.fetch_task(task.to_string());
         match new_resp {
-            Ok(task) => println!("Task: {}", task),
-            Err(err) => println!("Some error has occured! {}", err),
+            Ok(task) => print_success(format!("Task: {}", task)),
+            Err(err) => print_error("enquiring task", err),
         }
         Ok(())
     }
@@ -81,12 +82,12 @@ impl TaskManager {
         match new_resp {
             Ok(task) => {
                 if is_completed {
-                    println!("Task {} marked as completed!", task.title)
+                    print_success(format!("Task {} marked as completed!", task.title))
                 } else {
-                    println!("Task {} marked as incomplete!", task.title)
+                    print_warning(format!("Task {} marked as incomplete!", task.title))
                 }
             }
-            Err(err) => println!("Some error occured {}", err),
+            Err(err) => print_error("marking task complete", err),
         }
         Ok(())
     }
@@ -94,8 +95,8 @@ impl TaskManager {
     pub fn clear_tasks(&self) -> anyhow::Result<()> {
         let resp = &self.client.clear_completed_tasks();
         match resp {
-            Ok(()) => println!("Cleared all the tasks!"),
-            Err(err) => println!("Some error occured in fetching tasks! {}", err),
+            Ok(()) => print_success("Cleared all the tasks!".to_string()),
+            Err(err) => print_error("clearing completed tasks", err),
         }
         Ok(())
     }
@@ -107,8 +108,8 @@ impl TaskManager {
             .client
             .delete_task(task.id.as_ref().unwrap().to_string());
         match new_resp {
-            Ok(_res) => println!("Task {} has been deleted!", &task.title),
-            Err(err) => println!("Error deleting task {}", err),
+            Ok(_res) => print_success(format!("Task {} has been deleted!", &task.title)),
+            Err(err) => print_error("deleting the task", err),
         }
         Ok(())
     }

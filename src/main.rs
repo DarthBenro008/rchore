@@ -2,6 +2,7 @@ mod cli;
 mod handlers;
 mod models;
 mod oauth;
+mod printer;
 mod secrets;
 mod service;
 
