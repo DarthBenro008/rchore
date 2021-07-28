@@ -54,7 +54,6 @@ impl ApiTasks for GoogleApiClient {
         );
         let resp = self.client.get(url).send()?;
         if resp.status() != 200 {
-            println!("hit to fetch token");
             get_new_access_token(&self.localdb)?;
             let token = self.localdb.get_token()?;
             let new_client = GoogleApiClient::new_token_client(token);

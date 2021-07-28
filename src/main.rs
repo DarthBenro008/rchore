@@ -9,6 +9,7 @@ mod service;
 extern crate prettytable;
 
 use cli::{CommandLineArgs, Commands::*, GoogleAction::*, TaskAction::*};
+use handlers::misc_handler::MiscManager;
 use handlers::task_handler::TaskManager;
 use handlers::tasklist_handler::TaskListManager;
 use service::database_api::TasksDatabase;
@@ -37,13 +38,15 @@ fn main() -> anyhow::Result<()> {
             Stats { shrink } => show_stats(tasks_database, shrink)?,
         },
         TaskList { action } => match action {
-            cli::TaskListAction::List => {
+            cli::TaskListAction::Select => {
                 generate_tasklist_manager(tasks_database).list_tasklist()?
             }
             cli::TaskListAction::Delete => {
                 generate_tasklist_manager(tasks_database).delete_tasklist()?
             }
-            cli::TaskListAction::Add => generate_tasklist_manager(tasks_database).add_tasklist()?,
+            cli::TaskListAction::Create => {
+                generate_tasklist_manager(tasks_database).add_tasklist()?
+            }
             cli::TaskListAction::Update => {
                 generate_tasklist_manager(tasks_database).update_tasklist()?
             }
@@ -56,6 +59,7 @@ fn main() -> anyhow::Result<()> {
             Status => oauth::get_user_info(&tasks_database)?,
             Logout => oauth::logout(&tasks_database)?,
         },
+        Battery => MiscManager.help_p10k_script_generation()?,
     }
     Ok(())
 }

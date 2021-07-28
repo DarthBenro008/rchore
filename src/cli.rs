@@ -41,11 +41,11 @@ pub enum TaskAction {
 #[derive(Debug, StructOpt, PartialEq)]
 pub enum TaskListAction {
     /// Lists all task-lists and asks for default task-list selection.
-    List,
+    Select,
     /// Deletes a task-list.
     Delete,
     /// Creates a task-list.
-    Add,
+    Create,
     /// Updates a task-list.
     Update,
 }
@@ -95,4 +95,6 @@ pub enum Commands {
         #[structopt(subcommand)]
         action: TaskListAction,
     },
+    /// Helps you set-up battery for p10k
+    Battery,
 }
