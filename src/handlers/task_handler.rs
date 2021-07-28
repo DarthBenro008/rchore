@@ -1,9 +1,9 @@
 use crate::models::tasks::Tasks;
 use crate::printer::{print_error, print_success, print_task_table, print_warning};
 use crate::service::google_api::GoogleApiClient;
-use crate::service::google_tasks::ApiTasks;
+use crate::service::google_tasks::{ApiTasks, ServiceTasks};
 use anyhow;
-use console::Term;
+use console::{style, Term};
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 
 pub struct TaskManager {
@@ -107,6 +107,21 @@ impl TaskManager {
             Ok(_res) => print_success(format!("Task {} has been deleted!", &task.title)),
             Err(err) => print_error("deleting the task", err),
         }
+        Ok(())
+    }
+
+    pub fn get_stats(&self, shrink: bool) -> anyhow::Result<()> {
+        if let Err(err) = self.client.show_stats(shrink) {
+            format!(
+                "{}\n{} {}",
+                style("Error while getting stats :(")
+                    .for_stderr()
+                    .red()
+                    .bold(),
+                style("Reason:").for_stderr().red(),
+                style(err).for_stderr().red()
+            );
+        };
         Ok(())
     }
 }

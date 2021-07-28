@@ -73,7 +73,7 @@ pub fn get_new_access_token(tasks_database: &TasksDatabase) -> anyhow::Result<()
 pub fn get_user_info(tasks_database: &TasksDatabase) -> anyhow::Result<()> {
     let client = reqwest::blocking::Client::new();
     let token = tasks_database.get_token();
-    if let Err(_) = &token {
+    if token.is_err() {
         oauth_login(&tasks_database)?;
         get_user_info(&tasks_database)?;
         return Ok(());

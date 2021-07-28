@@ -36,6 +36,7 @@ fn main() -> anyhow::Result<()> {
             Undo { position } => {
                 generate_task_manager(tasks_database).complete_task(position, false)?
             }
+            Stats { shrink } => generate_task_manager(tasks_database).get_stats(shrink)?,
         },
         TaskList { action } => match action {
             cli::TaskListAction::List => {

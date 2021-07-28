@@ -31,6 +31,11 @@ pub enum TaskAction {
     Add,
     /// Clear all completed tasks in a task-list.
     Clear,
+    /// Shows simple stats about your tasks
+    Stats {
+        #[structopt(short, long, hidden = true)]
+        shrink: bool,
+    },
 }
 
 #[derive(Debug, StructOpt, PartialEq)]
@@ -82,7 +87,7 @@ pub enum Commands {
     },
     /// Helps to authenticate into Google and check status.
     Google {
-        #[structopt(subcommand, about = "I am a program and I work, just pass `-h`")]
+        #[structopt(subcommand)]
         action: GoogleAction,
     },
     /// Helps to select, Update and Delete task-lists.

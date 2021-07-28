@@ -1,6 +1,7 @@
 use super::google_api::{format_specific_task_url, GoogleApiClient};
 use crate::models::tasks::{TaskResponse, Tasks};
 use crate::oauth::get_new_access_token;
+use console::style;
 
 pub trait ApiTasks {
     fn fetch_all_tasks(
@@ -12,6 +13,10 @@ pub trait ApiTasks {
     fn update_task(&self, updated_task: Tasks) -> Result<Tasks, Box<dyn std::error::Error>>;
     fn clear_completed_tasks(&self) -> Result<(), Box<dyn std::error::Error>>;
     fn add_task(&self, task: Tasks) -> Result<Tasks, Box<dyn std::error::Error>>;
+}
+
+pub trait ServiceTasks {
+    fn show_stats(&self, shrink: bool) -> Result<(), Box<dyn std::error::Error>>;
 }
 
 impl ApiTasks for GoogleApiClient {
@@ -106,6 +111,35 @@ impl ApiTasks for GoogleApiClient {
         let resp = self.client.post(url).body("").send()?;
         if resp.status() != 204 {
             return Err("Failed to clear".into());
+        }
+        Ok(())
+    }
+}
+
+impl ServiceTasks for GoogleApiClient {
+    fn show_stats(&self, shrink: bool) -> Result<(), Box<dyn std::error::Error>> {
+        let tasks = self.localdb.get_data()?;
+        let mut incomplete = 0;
+        let mut complete = 0;
+        for task in &tasks {
+            if task.status == "needsAction" {
+                incomplete += 1;
+            } else {
+                complete += 1;
+            }
+        }
+        if shrink {
+            println!("{} {} {}", complete, incomplete, &tasks.len());
+        } else {
+            println!(
+                "{} {}\n{} {}\n{} {}",
+                style("Completed Tasks: ").green(),
+                style(complete).green(),
+                style("Incomplete Tasks: ").red(),
+                style(incomplete).red(),
+                style("Total Tasks: ").cyan(),
+                style(&tasks.len()).cyan()
+            );
         }
         Ok(())
     }
