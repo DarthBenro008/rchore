@@ -11,12 +11,14 @@ pub struct TaskManager {
 }
 
 impl TaskManager {
-    pub fn list_tasks(&self, show_hidden: bool) -> anyhow::Result<()> {
+    pub fn list_tasks(&self, show_hidden: bool, is_silent: bool) -> anyhow::Result<()> {
         let resp = &self.client.fetch_all_tasks(show_hidden);
         match resp {
             Ok(list) => {
                 self.client.localdb.insert_tasks(list.items.clone())?;
-                print_task_table(&list.items);
+                if !is_silent {
+                    print_task_table(&list.items);
+                }
             }
             Err(err) => print_error("fetching tasks", err),
         }

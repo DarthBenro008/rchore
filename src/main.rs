@@ -26,7 +26,7 @@ fn main() -> anyhow::Result<()> {
 
     match cmd {
         Tasks { action } => match action {
-            List { force } => generate_task_manager(tasks_database).list_tasks(force)?,
+            List { force } => generate_task_manager(tasks_database).list_tasks(force, false)?,
             Done { position } => {
                 generate_task_manager(tasks_database).complete_task(position, true)?
             }
@@ -52,7 +52,10 @@ fn main() -> anyhow::Result<()> {
             }
         },
         Google { action } => match action {
-            Login => oauth::oauth_login(&tasks_database)?,
+            Login => {
+                oauth::oauth_login(&tasks_database)?;
+                generate_task_manager(tasks_database).list_tasks(false, true)?;
+            }
             Status => oauth::get_user_info(&tasks_database)?,
             Logout => oauth::logout(&tasks_database)?,
         },
