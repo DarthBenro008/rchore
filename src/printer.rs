@@ -65,7 +65,7 @@ pub fn url_print(url: reqwest::Url) {
 
 pub fn force_write(action: String) -> anyhow::Result<()> {
     let term = Term::stdout();
-    term.clear_last_lines(3)?;
+    term.clear_last_lines(5)?;
     print_ok(action);
     Ok(())
 }

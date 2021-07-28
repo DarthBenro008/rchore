@@ -1,9 +1,9 @@
 use crate::models::tasks::Tasks;
 use crate::printer::{print_error, print_success, print_task_table, print_warning};
 use crate::service::google_api::GoogleApiClient;
-use crate::service::google_tasks::{ApiTasks, ServiceTasks};
+use crate::service::google_tasks::ApiTasks;
 use anyhow;
-use console::{style, Term};
+use console::Term;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 
 pub struct TaskManager {
@@ -49,7 +49,10 @@ impl TaskManager {
         let task = Tasks::new(None, title, notes, status);
         let resp = &self.client.add_task(task);
         match resp {
-            Ok(task) => print_success(format!("Task {} has been created!", task.title)),
+            Ok(task) => {
+                let _ = self.client.localdb.add_task(task.clone());
+                print_success(format!("Task {} has been created!", task.title))
+            }
             Err(err) => print_error("creating task", err),
         }
         Ok(())
@@ -77,6 +80,7 @@ impl TaskManager {
         let new_resp = &self.client.update_task(task);
         match new_resp {
             Ok(task) => {
+                let _ = self.client.localdb.update_task(task.clone());
                 if is_completed {
                     print_success(format!("Task {} marked as completed!", task.title))
                 } else {
@@ -91,7 +95,10 @@ impl TaskManager {
     pub fn clear_tasks(&self) -> anyhow::Result<()> {
         let resp = &self.client.clear_completed_tasks();
         match resp {
-            Ok(()) => print_success("Cleared all the tasks!".to_string()),
+            Ok(()) => {
+                let _ = self.client.localdb.clear_completed_tasks();
+                print_success("Cleared all the tasks!".to_string())
+            }
             Err(err) => print_error("clearing completed tasks", err),
         }
         Ok(())
@@ -104,24 +111,15 @@ impl TaskManager {
             .client
             .delete_task(task.id.as_ref().unwrap().to_string());
         match new_resp {
-            Ok(_res) => print_success(format!("Task {} has been deleted!", &task.title)),
+            Ok(_res) => {
+                let _ = self
+                    .client
+                    .localdb
+                    .delete_task(task.id.as_ref().unwrap().to_string());
+                print_success(format!("Task {} has been deleted!", &task.title))
+            }
             Err(err) => print_error("deleting the task", err),
         }
-        Ok(())
-    }
-
-    pub fn get_stats(&self, shrink: bool) -> anyhow::Result<()> {
-        if let Err(err) = self.client.show_stats(shrink) {
-            format!(
-                "{}\n{} {}",
-                style("Error while getting stats :(")
-                    .for_stderr()
-                    .red()
-                    .bold(),
-                style("Reason:").for_stderr().red(),
-                style(err).for_stderr().red()
-            );
-        };
         Ok(())
     }
 }

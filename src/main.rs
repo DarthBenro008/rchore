@@ -14,6 +14,7 @@ use handlers::task_handler::TaskManager;
 use handlers::tasklist_handler::TaskListManager;
 use service::database_api::TasksDatabase;
 use service::google_api::GoogleApiClient;
+use service::offline_service::show_stats;
 use structopt::StructOpt;
 
 fn main() -> anyhow::Result<()> {
@@ -36,7 +37,7 @@ fn main() -> anyhow::Result<()> {
             Undo { position } => {
                 generate_task_manager(tasks_database).complete_task(position, false)?
             }
-            Stats { shrink } => generate_task_manager(tasks_database).get_stats(shrink)?,
+            Stats { shrink } => show_stats(tasks_database, shrink)?,
         },
         TaskList { action } => match action {
             cli::TaskListAction::List => {

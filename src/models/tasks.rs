@@ -48,6 +48,21 @@ impl Tasks {
         }
     }
 
+    pub fn clone(&self) -> Tasks {
+        Tasks {
+            kind: String::from(&self.kind),
+            id: Some(String::from(self.id.as_ref().unwrap())),
+            etag: Some(String::from(self.id.as_ref().unwrap())),
+            title: String::from(&self.title),
+            updated: Some(String::from(self.updated.as_ref().unwrap())),
+            self_link: Some(String::from(self.self_link.as_ref().unwrap())),
+            position: Some(String::from(self.position.as_ref().unwrap())),
+            notes: String::from(&self.notes),
+            status: String::from(&self.status),
+            due: String::from(&self.due),
+        }
+    }
+
     pub fn get_sanitised_data(&self) -> (String, String, String, String) {
         let status = if self.status == "needsAction" {
             String::from("Incomplete")

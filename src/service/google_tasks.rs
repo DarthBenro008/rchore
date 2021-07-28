@@ -1,7 +1,7 @@
 use super::google_api::{format_specific_task_url, GoogleApiClient};
 use crate::models::tasks::{TaskResponse, Tasks};
 use crate::oauth::get_new_access_token;
-use console::style;
+use crate::service::database_api::TasksDatabase;
 
 pub trait ApiTasks {
     fn fetch_all_tasks(
@@ -13,10 +13,6 @@ pub trait ApiTasks {
     fn update_task(&self, updated_task: Tasks) -> Result<Tasks, Box<dyn std::error::Error>>;
     fn clear_completed_tasks(&self) -> Result<(), Box<dyn std::error::Error>>;
     fn add_task(&self, task: Tasks) -> Result<Tasks, Box<dyn std::error::Error>>;
-}
-
-pub trait ServiceTasks {
-    fn show_stats(&self, shrink: bool) -> Result<(), Box<dyn std::error::Error>>;
 }
 
 impl ApiTasks for GoogleApiClient {
@@ -31,6 +27,12 @@ impl ApiTasks for GoogleApiClient {
         if resp.status() != 200 {
             get_new_access_token(&self.localdb)?;
             self.add_task(task)?;
+            return Ok(Tasks::new(
+                None,
+                "".to_string(),
+                "".to_string(),
+                "".to_string(),
+            ));
         }
         let tasks = resp.json::<Tasks>()?;
         Ok(tasks)
@@ -54,6 +56,11 @@ impl ApiTasks for GoogleApiClient {
         if resp.status() != 200 {
             get_new_access_token(&self.localdb)?;
             self.fetch_all_tasks(show_hidden)?;
+            return Ok(TaskResponse {
+                etag: "".to_string(),
+                kind: "".to_string(),
+                items: [].to_vec(),
+            });
         }
         let tasks_response = resp.json::<TaskResponse>()?;
         Ok(tasks_response)
@@ -116,31 +123,65 @@ impl ApiTasks for GoogleApiClient {
     }
 }
 
-impl ServiceTasks for GoogleApiClient {
-    fn show_stats(&self, shrink: bool) -> Result<(), Box<dyn std::error::Error>> {
-        let tasks = self.localdb.get_data()?;
-        let mut incomplete = 0;
-        let mut complete = 0;
-        for task in &tasks {
-            if task.status == "needsAction" {
-                incomplete += 1;
-            } else {
-                complete += 1;
+impl ApiTasks for TasksDatabase {
+    fn add_task(&self, task: Tasks) -> Result<Tasks, Box<dyn std::error::Error>> {
+        let mut tasks = self.get_data()?;
+        tasks.push(task);
+        self.insert_tasks(tasks)?;
+        Ok(Tasks::new(
+            None,
+            "".to_string(),
+            "".to_string(),
+            "".to_string(),
+        ))
+    }
+    fn fetch_all_tasks(
+        &self,
+        _show_hidden: bool,
+    ) -> Result<TaskResponse, Box<dyn std::error::Error>> {
+        let tasks = self.get_data()?;
+        Ok(TaskResponse {
+            etag: "".to_string(),
+            kind: "".to_string(),
+            items: tasks,
+        })
+    }
+
+    fn fetch_task(&self, id: String) -> Result<Tasks, Box<dyn std::error::Error>> {
+        let tasks = self.get_data()?;
+        for task in tasks {
+            if *task.id.as_ref().unwrap() == id {
+                return Ok(task);
             }
         }
-        if shrink {
-            println!("{} {} {}", complete, incomplete, &tasks.len());
-        } else {
-            println!(
-                "{} {}\n{} {}\n{} {}",
-                style("Completed Tasks: ").green(),
-                style(complete).green(),
-                style("Incomplete Tasks: ").red(),
-                style(incomplete).red(),
-                style("Total Tasks: ").cyan(),
-                style(&tasks.len()).cyan()
-            );
-        }
+        Err("Task not found".into())
+    }
+
+    fn delete_task(&self, id: String) -> Result<(), Box<dyn std::error::Error>> {
+        let mut tasks = self.get_data()?;
+        tasks.retain(|task| *task.id.as_ref().unwrap() != id);
+        self.insert_tasks(tasks)?;
+        Ok(())
+    }
+
+    fn update_task(&self, updated_task: Tasks) -> Result<Tasks, Box<dyn std::error::Error>> {
+        let id = String::from(updated_task.id.as_ref().unwrap());
+        let mut tasks = self.get_data()?;
+        tasks.retain(|task| *task.id.as_ref().unwrap() != id);
+        tasks.push(updated_task);
+        self.insert_tasks(tasks)?;
+        Ok(Tasks::new(
+            None,
+            "".to_string(),
+            "".to_string(),
+            "".to_string(),
+        ))
+    }
+
+    fn clear_completed_tasks(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let mut tasks = self.get_data()?;
+        tasks.retain(|task| task.status != "completed");
+        self.insert_tasks(tasks)?;
         Ok(())
     }
 }

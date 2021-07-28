@@ -86,6 +86,7 @@ pub fn get_user_info(tasks_database: &TasksDatabase) -> anyhow::Result<()> {
     if resp.status() != 200 {
         get_new_access_token(&tasks_database)?;
         get_user_info(&tasks_database)?;
+        return Ok(());
     }
     let data: UserInfoResponse = resp.json()?;
     println!(
@@ -181,7 +182,6 @@ fn get_token(
         .exchange_code(code)
         .set_pkce_verifier(pkce_verifier)
         .request(http_client);
-
     let result = token_response.unwrap();
     let refresh_token = result.refresh_token().unwrap().secret();
     Ok((
