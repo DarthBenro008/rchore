@@ -43,7 +43,7 @@ pub fn oauth_login(tasks_database: &TasksDatabase) -> anyhow::Result<()> {
     tasks_database.insert_token(token)?;
     tasks_database.insert_refresh_token(r_token)?;
     force_write("Logged in sucessfully! Welcome to rchore :)".to_string())?;
-    
+
     Ok(())
 }
 

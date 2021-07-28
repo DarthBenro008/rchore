@@ -9,7 +9,6 @@ mod service;
 extern crate prettytable;
 
 use cli::{CommandLineArgs, Commands::*, GoogleAction::*, TaskAction::*};
-use dotenv::dotenv;
 use handlers::task_handler::TaskManager;
 use handlers::tasklist_handler::TaskListManager;
 use service::database_api::TasksDatabase;
@@ -18,8 +17,6 @@ use service::offline_service::show_stats;
 use structopt::StructOpt;
 
 fn main() -> anyhow::Result<()> {
-    dotenv().ok();
-
     let CommandLineArgs { cmd } = CommandLineArgs::from_args();
 
     let tasks_database = TasksDatabase::new();
