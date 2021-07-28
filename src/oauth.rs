@@ -48,6 +48,7 @@ pub fn oauth_login(tasks_database: &TasksDatabase) -> anyhow::Result<()> {
 }
 
 pub fn get_new_access_token(tasks_database: &TasksDatabase) -> anyhow::Result<()> {
+    println!("new token called");
     let secrets = Secrets::new();
     let r_token = tasks_database.get_refresh_token()?;
     let new_refresh_token_request = RefreshTokenExchange {

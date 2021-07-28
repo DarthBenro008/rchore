@@ -7,6 +7,7 @@ use std::fmt;
 pub struct TaskResponse {
     pub kind: String,
     pub etag: String,
+    #[serde(default)]
     pub items: Vec<Tasks>,
 }
 

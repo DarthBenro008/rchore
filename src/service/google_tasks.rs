@@ -5,7 +5,7 @@ use crate::service::database_api::TasksDatabase;
 
 pub trait ApiTasks {
     fn fetch_all_tasks(
-        &self,
+        &mut self,
         show_hidden: bool,
     ) -> Result<TaskResponse, Box<dyn std::error::Error>>;
     fn fetch_task(&self, id: String) -> Result<Tasks, Box<dyn std::error::Error>>;
@@ -38,7 +38,7 @@ impl ApiTasks for GoogleApiClient {
         Ok(tasks)
     }
     fn fetch_all_tasks(
-        &self,
+        &mut self,
         show_hidden: bool,
     ) -> Result<TaskResponse, Box<dyn std::error::Error>> {
         let query_params = if show_hidden {
@@ -54,7 +54,11 @@ impl ApiTasks for GoogleApiClient {
         );
         let resp = self.client.get(url).send()?;
         if resp.status() != 200 {
+            println!("hit to fetch token");
             get_new_access_token(&self.localdb)?;
+            let token = self.localdb.get_token()?;
+            let new_client = GoogleApiClient::new_token_client(token);
+            self.client = new_client;
             self.fetch_all_tasks(show_hidden)?;
             return Ok(TaskResponse {
                 etag: "".to_string(),
@@ -136,7 +140,7 @@ impl ApiTasks for TasksDatabase {
         ))
     }
     fn fetch_all_tasks(
-        &self,
+        &mut self,
         _show_hidden: bool,
     ) -> Result<TaskResponse, Box<dyn std::error::Error>> {
         let tasks = self.get_data()?;
