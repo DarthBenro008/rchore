@@ -47,6 +47,7 @@ impl TasksDatabase {
     }
 
     pub fn insert_token(&self, token: String) -> anyhow::Result<()> {
+        println!("new token has been inserted");
         let bytes = bincode::serialize(&token)?;
         self.db.insert("token", bytes)?;
         Ok(())
@@ -93,5 +94,10 @@ impl TasksDatabase {
             }
             None => Err(anyhow!("Error!")),
         }
+    }
+
+    pub fn nuke_db(&self) -> anyhow::Result<()> {
+        self.db.clear()?;
+        Ok(())
     }
 }

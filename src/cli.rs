@@ -49,6 +49,10 @@ pub enum TaskListAction {
 pub enum GoogleAction {
     /// Authenticate yourself via Google.
     Login,
+    /// Check which account you authenticated into
+    Status,
+    // Logs you out of your account
+    Logout,
 }
 
 #[derive(Debug, StructOpt, PartialEq)]

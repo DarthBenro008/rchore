@@ -70,7 +70,7 @@ pub fn force_write(action: String) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub fn print_task_table(tasks: &Vec<Tasks>) {
+pub fn print_task_table(tasks: &[Tasks]) {
     let mut table = Table::new();
     table.set_format(*format::consts::FORMAT_NO_BORDER);
     table.add_row(row![cb => "Index", "Title", "Status", "Notes", "Due"]);

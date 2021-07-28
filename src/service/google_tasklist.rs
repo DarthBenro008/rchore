@@ -25,21 +25,27 @@ impl ApiTaskList for GoogleApiClient {
         let url = format_base_url(&self.base_url, String::from("/users/@me/lists"));
         let resp = self.client.get(url).send()?;
         if resp.status() != 200 {
+            println!("fetch token failed");
             get_new_access_token(&self.localdb)?;
             let token = self.localdb.get_token()?;
             let new_client = GoogleApiClient::new_token_client(token);
             self.client = new_client;
             self.fetch_tasklist(false)?;
+            return Ok(TaskListResponse {
+                kind: "".to_string(),
+                etag: "".to_string(),
+                items: [].to_vec(),
+            });
         }
         let task_list = resp.json::<TaskListResponse>()?;
         if default {
             let first_tasklist = task_list.items.get(0);
             match first_tasklist {
                 Some(task_list) => {
-                    &self.localdb.insert_default_tasklist(
+                    self.localdb.insert_default_tasklist(
                         task_list.id.as_ref().unwrap().to_string(),
                         String::from(&task_list.title),
-                    );
+                    )?;
                     self.tasklist = Some(String::from(task_list.id.as_ref().unwrap()))
                 }
                 _ => print_red("fetching tasklist"),

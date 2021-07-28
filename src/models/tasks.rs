@@ -54,14 +54,14 @@ impl Tasks {
         } else {
             String::from("Completed")
         };
-        let due = if self.due == "" {
+        let due = if self.due.is_empty() {
             String::from("Not specified")
         } else {
             let datetime = DateTime::parse_from_rfc3339(&self.due).unwrap();
             let newdate = datetime.format("%d/%m/%Y");
             format!("{}", newdate)
         };
-        let notes = if self.notes == "" {
+        let notes = if self.notes.is_empty() {
             String::from("No note was added")
         } else {
             String::from(&self.notes)
@@ -77,12 +77,12 @@ impl fmt::Display for Tasks {
         } else {
             String::from("Completed")
         };
-        let due = if self.due == "" {
+        let due = if self.due.is_empty() {
             String::from("Not specified")
         } else {
             String::from(&self.due)
         };
-        let notes = if self.notes == "" {
+        let notes = if self.notes.is_empty() {
             String::from("No note added")
         } else {
             String::from(&self.notes)

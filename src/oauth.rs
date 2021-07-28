@@ -1,6 +1,7 @@
-use crate::printer::{force_write, url_print};
+use crate::printer::{force_write, print_ok, url_print};
 use crate::secrets::Secrets;
 use crate::service::database_api::TasksDatabase;
+use console::style;
 use oauth2::basic::BasicClient;
 use oauth2::reqwest::http_client;
 use oauth2::{
@@ -12,7 +13,6 @@ use std::net::TcpListener;
 use url::Url;
 
 #[derive(Default, Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-#[serde()]
 struct RefreshTokenExchange {
     pub client_id: String,
     pub client_secret: String,
@@ -21,12 +21,19 @@ struct RefreshTokenExchange {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-#[serde()]
 struct RefreshTokenExchangeResponse {
     pub access_token: String,
     pub expires_in: usize,
     pub scope: String,
     pub token_type: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+struct UserInfoResponse {
+    id: String,
+    email: String,
+    verified_email: bool,
+    picture: String,
 }
 
 pub fn oauth_login(tasks_database: &TasksDatabase) -> anyhow::Result<()> {
@@ -63,6 +70,41 @@ pub fn get_new_access_token(tasks_database: &TasksDatabase) -> anyhow::Result<()
     Ok(())
 }
 
+pub fn get_user_info(tasks_database: &TasksDatabase) -> anyhow::Result<()> {
+    let client = reqwest::blocking::Client::new();
+    let token = tasks_database.get_token();
+    if let Err(_) = &token {
+        oauth_login(&tasks_database)?;
+        get_user_info(&tasks_database)?;
+        return Ok(());
+    };
+    let url = format!(
+        "https://www.googleapis.com/oauth2/v2/userinfo?access_token={}",
+        token.unwrap(),
+    );
+    let resp = client.get(url).send()?;
+    if resp.status() != 200 {
+        get_new_access_token(&tasks_database)?;
+        get_user_info(&tasks_database)?;
+    }
+    let data: UserInfoResponse = resp.json()?;
+    println!(
+        "{} {}",
+        style("You are logged into rChore as:")
+            .for_stdout()
+            .white()
+            .bold(),
+        style(&data.email).for_stdout().green().bold().underlined()
+    );
+    Ok(())
+}
+
+pub fn logout(tasks_database: &TasksDatabase) -> anyhow::Result<()> {
+    tasks_database.nuke_db()?;
+    print_ok("Bye! You have been logged out succesfully!".to_string());
+    Ok(())
+}
+
 fn create_oauth_client() -> anyhow::Result<BasicClient> {
     let secrets = Secrets::new();
     let client_id = secrets.client_id;
@@ -88,6 +130,9 @@ fn initiate_oauth(basic_client: &BasicClient) -> anyhow::Result<PkceCodeVerifier
         .add_extra_param("prompt", "select_account")
         .add_scope(Scope::new(
             "https://www.googleapis.com/auth/tasks".to_string(),
+        ))
+        .add_scope(Scope::new(
+            "https://www.googleapis.com/auth/userinfo.email".to_string(),
         ))
         .set_pkce_challenge(pkce_challenge)
         .url();
@@ -139,7 +184,6 @@ fn get_token(
 
     let result = token_response.unwrap();
     let refresh_token = result.refresh_token().unwrap().secret();
-
     Ok((
         result.access_token().secret().clone(),
         refresh_token.clone(),

@@ -51,6 +51,8 @@ fn main() -> anyhow::Result<()> {
         },
         Google { action } => match action {
             Login => oauth::oauth_login(&tasks_database)?,
+            Status => oauth::get_user_info(&tasks_database)?,
+            Logout => oauth::logout(&tasks_database)?,
         },
     }
     Ok(())
