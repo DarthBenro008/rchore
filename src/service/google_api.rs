@@ -1,3 +1,4 @@
+use crate::oauth;
 use crate::oauth::oauth_login;
 use crate::printer::print_red;
 use crate::service::database_api::TasksDatabase;
@@ -19,6 +20,12 @@ impl GoogleApiClient {
                 print_red("logging you in, please try again");
             };
         };
+        if tasks_database.is_token_refresh_required().unwrap() {
+            let res = oauth::get_new_access_token(&tasks_database);
+            if let Err(_err) = res {
+                print_red("logging you in, please try again");
+            };
+        }
         let token = &tasks_database.get_token().unwrap();
         let formatted_token = format!("{} {}", "Bearer ", token);
         let mut headers = header::HeaderMap::new();
