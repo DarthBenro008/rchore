@@ -3,7 +3,6 @@
 ![release](https://img.shields.io/github/v/release/DarthBenro008/rchore)
 ![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/DarthBenro008/rchore/CrossPlatformBuild/master)
 ![rust-version](https://img.shields.io/badge/rust-v1.5.2-green)
-![Crates.io](https://img.shields.io/crates/d/rchore)
 [![GitHub License](https://img.shields.io/github/license/aryan9600/cowin-notifier)](https://github.com/aryan9600/cowin-notifier/blob/master/LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/aryan9600/cowin-notifier/issues/new/choose)
 ![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2FDarthBenro008%2Frchore)
@@ -35,7 +34,7 @@ Primary features of rChore are:
 
 ### Powerlevel10k battery support
 
-![p10k demo]()
+![p10k demo](assets/rchore.gif)
 
 ## ⬇ Installation
 
