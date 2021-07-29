@@ -6,6 +6,7 @@
 [![GitHub License](https://img.shields.io/github/license/aryan9600/cowin-notifier)](https://github.com/aryan9600/cowin-notifier/blob/master/LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/aryan9600/cowin-notifier/issues/new/choose)
 ![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2FDarthBenro008%2Frchore)
+
 # rChore
 
 > A feature packed unofficial Google Tasks CLI to boost your producitvity, written purely in Rust.
@@ -61,14 +62,14 @@ If you use powerlevel10k, you can type `rchore battery` to get help on installin
 - Open .p10k.zsh file in your favorite editor.
 - Copy the function from `rchore battery` and append it to your .p10k.zsh file
 - Add rchore to either `POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS` or `POWERLEVEL9K_LEFT_PROMPT_ELEMENTS`
-  
+
   ```bash
     typeset -g POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(
     # =========================[ Line #1 ]=========================
-    ...      
+    ...
     rchore
   )
-  ````
+  ```
 
 ## 🛠 Architecture and Structure
 
@@ -83,7 +84,7 @@ Spread the word to your fellows to boost producitivity for everyone!
 ## 🤝 Contributions
 
 - Feel Free to Open a PR/Issue for any feature or bug(s).
-- Make sure you follow the [community guidelines](https://docs.github.com/en/github/site-policy/github-community-guidelines) and read [CONTRIBUTIONS.md](https://github.com/DarthBenro008/rchore/CONTRIBUTIONS.md)!
+- Make sure you follow the [community guidelines](https://docs.github.com/en/github/site-policy/github-community-guidelines) and read [CONTRIBUTING.md.md](https://github.com/DarthBenro008/rchore/CONTRIBUTING.md)!
 - Feel free to open an issue to ask a question/discuss anything about rChore.
 - Have a feature request? Open an Issue!
 
