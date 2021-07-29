@@ -1,5 +1,6 @@
 use crate::models::tasks::Tasks;
 use anyhow::anyhow;
+use chrono::prelude::*;
 
 pub struct TasksDatabase {
     db: sled::Db,
@@ -47,6 +48,7 @@ impl TasksDatabase {
     }
 
     pub fn insert_token(&self, token: String) -> anyhow::Result<()> {
+        self.insert_token_time()?;
         let bytes = bincode::serialize(&token)?;
         self.db.insert("token", bytes)?;
         Ok(())
@@ -90,6 +92,29 @@ impl TasksDatabase {
             Some(bytes) => {
                 let default_tasklist: DefaultTaskListDatabase = bincode::deserialize(&bytes)?;
                 Ok((default_tasklist.id, default_tasklist.title))
+            }
+            None => Err(anyhow!("Error!")),
+        }
+    }
+
+    pub fn insert_token_time(&self) -> anyhow::Result<()> {
+        let utc: DateTime<Utc> = Utc::now();
+        let bytes = bincode::serialize(&utc.timestamp_millis())?;
+        self.db.insert("token_time", bytes)?;
+        Ok(())
+    }
+
+    pub fn is_token_refresh_required(&self) -> anyhow::Result<bool> {
+        match self.db.get("token_time")? {
+            Some(bytes) => {
+                let token_time: i64 = bincode::deserialize(&bytes)?;
+                let utc: DateTime<Utc> = Utc::now();
+                let current_time = utc.timestamp_millis();
+                if (current_time - token_time) > 1_800_000 {
+                    Ok(true)
+                } else {
+                    Ok(false)
+                }
             }
             None => Err(anyhow!("Error!")),
         }
