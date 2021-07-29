@@ -1,6 +1,5 @@
 use super::google_api::{format_specific_task_url, GoogleApiClient};
 use crate::models::tasks::{TaskResponse, Tasks};
-use crate::oauth::get_new_access_token;
 use crate::service::database_api::TasksDatabase;
 
 pub trait ApiTasks {
@@ -25,14 +24,7 @@ impl ApiTasks for GoogleApiClient {
         );
         let resp = self.client.post(url).json(&task).send()?;
         if resp.status() != 200 {
-            get_new_access_token(&self.localdb)?;
-            self.add_task(task)?;
-            return Ok(Tasks::new(
-                None,
-                "".to_string(),
-                "".to_string(),
-                "".to_string(),
-            ));
+            return Err("Google Server Error".into());
         }
         let tasks = resp.json::<Tasks>()?;
         Ok(tasks)
@@ -54,16 +46,7 @@ impl ApiTasks for GoogleApiClient {
         );
         let resp = self.client.get(url).send()?;
         if resp.status() != 200 {
-            get_new_access_token(&self.localdb)?;
-            let token = self.localdb.get_token()?;
-            let new_client = GoogleApiClient::new_token_client(token);
-            self.client = new_client;
-            self.fetch_all_tasks(show_hidden)?;
-            return Ok(TaskResponse {
-                etag: "".to_string(),
-                kind: "".to_string(),
-                items: [].to_vec(),
-            });
+            return Err("Google Server Error".into());
         }
         let tasks_response = resp.json::<TaskResponse>()?;
         Ok(tasks_response)

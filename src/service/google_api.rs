@@ -18,12 +18,14 @@ impl GoogleApiClient {
             let res = oauth_login(&tasks_database);
             if let Err(_err) = res {
                 print_red("logging you in, please try again");
+                std::process::exit(1);
             };
         };
         if tasks_database.is_token_refresh_required().unwrap() {
             let res = oauth::get_new_access_token(&tasks_database);
             if let Err(_err) = res {
                 print_red("logging you in, please try again");
+                std::process::exit(1);
             };
         }
         let token = &tasks_database.get_token().unwrap();
@@ -53,18 +55,6 @@ impl GoogleApiClient {
             tasklist: Some(saved_default_tasklist_title.0),
             localdb: tasks_database,
         }
-    }
-    pub fn new_token_client(token: String) -> reqwest::blocking::Client {
-        let formatted_token = format!("{} {}", "Bearer ", token);
-        let mut headers = header::HeaderMap::new();
-        headers.insert(
-            header::AUTHORIZATION,
-            header::HeaderValue::from_str(&formatted_token).unwrap(),
-        );
-        reqwest::blocking::Client::builder()
-            .default_headers(headers)
-            .build()
-            .unwrap()
     }
 }
 

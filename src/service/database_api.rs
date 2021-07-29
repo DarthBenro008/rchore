@@ -111,9 +111,9 @@ impl TasksDatabase {
                 let utc: DateTime<Utc> = Utc::now();
                 let current_time = utc.timestamp_millis();
                 if (current_time - token_time) > 1_800_000 {
-                    return Ok(true);
+                    Ok(true)
                 } else {
-                    return Ok(false);
+                    Ok(false)
                 }
             }
             None => Err(anyhow!("Error!")),

@@ -1,6 +1,5 @@
 use super::google_api::{format_base_url, format_task_url, GoogleApiClient};
 use crate::models::tasklist::{TaskList, TaskListResponse};
-use crate::oauth::get_new_access_token;
 use crate::printer::print_red;
 
 pub trait ApiTaskList {
@@ -25,17 +24,7 @@ impl ApiTaskList for GoogleApiClient {
         let url = format_base_url(&self.base_url, String::from("/users/@me/lists"));
         let resp = self.client.get(url).send()?;
         if resp.status() != 200 {
-            println!("fetch token failed");
-            get_new_access_token(&self.localdb)?;
-            let token = self.localdb.get_token()?;
-            let new_client = GoogleApiClient::new_token_client(token);
-            self.client = new_client;
-            self.fetch_tasklist(false)?;
-            return Ok(TaskListResponse {
-                kind: "".to_string(),
-                etag: "".to_string(),
-                items: [].to_vec(),
-            });
+            return Err("Google Server Error".into());
         }
         let task_list = resp.json::<TaskListResponse>()?;
         if default {
