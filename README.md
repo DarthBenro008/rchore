@@ -1,10 +1,17 @@
 ![rChore Banner](assets/banner.png)
 
+![release](https://img.shields.io/github/v/release/DarthBenro008/rchore)
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/DarthBenro008/rchore/CrossPlatformBuild/master)
+![rust-version](https://img.shields.io/badge/rust-v1.5.2-green)
+![Crates.io](https://img.shields.io/crates/d/rchore)
+[![GitHub License](https://img.shields.io/github/license/aryan9600/cowin-notifier)](https://github.com/aryan9600/cowin-notifier/blob/master/LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/aryan9600/cowin-notifier/issues/new/choose)
+![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2FDarthBenro008%2Frchore)
 # rChore
 
 > A feature packed unofficial Google Tasks CLI to boost your producitvity, written purely in Rust.
 
-## What is rChore?
+## 🤔 What is rChore?
 
 rChore is an unofficial Google Tasks CLI, it can help you manage various tasks right from your terminal, it also comes with a [powerlevel10k battery](https://github.com/romkatv/powerlevel10k#extremely-customizable) support to boost your producivity!
 
@@ -16,7 +23,7 @@ Primary features of rChore are:
 - Switch between task-lists and ability to create, update, and, delete task-lists.
 - p10k battery support that boosts your productivity!
 
-## Usage
+## 💻 Usage
 
 ![rChore Usage](assets/overview.png)
 
@@ -30,7 +37,7 @@ Primary features of rChore are:
 
 ![p10k demo]()
 
-## Installation
+## ⬇ Installation
 
 ### Cargo
 
@@ -64,24 +71,24 @@ If you use powerlevel10k, you can type `rchore battery` to get help on installin
   )
   ````
 
-## Architecture and Structure
+## 🛠 Architecture and Structure
 
 ![rChore Architecture](assets/architecture.png)
 
-## Show your support
+## ⭐ Show your support
 
 Give a ⭐ if you liked this project!
 
 Spread the word to your fellows to boost producitivity for everyone!
 
-## Contributions
+## 🤝 Contributions
 
 - Feel Free to Open a PR/Issue for any feature or bug(s).
 - Make sure you follow the [community guidelines](https://docs.github.com/en/github/site-policy/github-community-guidelines) and read [CONTRIBUTIONS.md](https://github.com/DarthBenro008/rchore/CONTRIBUTIONS.md)!
 - Feel free to open an issue to ask a question/discuss anything about rChore.
 - Have a feature request? Open an Issue!
 
-## License
+## ⚖ License
 
 Copyright 2021 Hemanth Krishna
 
