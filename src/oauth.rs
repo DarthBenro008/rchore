@@ -75,8 +75,8 @@ pub fn get_user_info(tasks_database: &TasksDatabase) -> anyhow::Result<()> {
     let client = reqwest::blocking::Client::new();
     let token = tasks_database.get_token();
     if token.is_err() {
-        oauth_login(&tasks_database)?;
-        get_user_info(&tasks_database)?;
+        oauth_login(tasks_database)?;
+        get_user_info(tasks_database)?;
         return Ok(());
     };
     let url = format!(
@@ -85,8 +85,8 @@ pub fn get_user_info(tasks_database: &TasksDatabase) -> anyhow::Result<()> {
     );
     let resp = client.get(url).send()?;
     if resp.status() != 200 {
-        get_new_access_token(&tasks_database)?;
-        get_user_info(&tasks_database)?;
+        get_new_access_token(tasks_database)?;
+        get_user_info(tasks_database)?;
         return Ok(());
     }
     let data: UserInfoResponse = resp.json()?;
