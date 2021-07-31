@@ -1,0 +1,72 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.CLIENT }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [linux, windows, macos]
+        include:
+          - name: linux
+            os: ubuntu-latest
+            artifact_path: target/release/rchore
+            asset_name: rchore-linux
+          - name: windows
+            os: windows-latest
+            artifact_path: target/release/rchore.exe
+            asset_name: rchore-windows.exe
+          - name: macos
+            os: macos-latest
+            artifact_path: target/release/rchore
+            asset_name: rchore-macos
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+
+      - name: Build
+        run: cargo build --release --locked
+
+      - name: Rename binary
+        run: mv ${{ matrix.artifact_path }} ${{ matrix.asset_name }}
+
+      - name: Create NPM Release
+        run: mkdir -p builds/rchore-${{ matrix.name }} && cp ${{ matrix.asset_name }} builds/rchore-${{ matrix.name }} && tar -C builds -czvf rchore-${{ matrix.name }}.tar.gz rchore-${{ matrix.name }}
+
+      - name: Release binary
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            rchore-${{ matrix.name }}.tar.gz
+            ${{ matrix.asset_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  changelog:
+    name: Update Changelog
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Release Changelog
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
