@@ -41,7 +41,27 @@ Primary features of rChore are:
 
 ### Cargo
 
-If you have cargo installed, you can install rChore using cargo with the following command.
+If you have cargo installed, you can install rChore using cargo.
+
+- Few secret keys should be set via environment variables. To obtain `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` follow to: https://developers.google.com/tasks/firstapp#register. To set these variables you should add the following snippets (using your values for vars) to your `~/.bashrc` / `~/.zshrc` / `~/.config/fish/config.fish`
+
+**bash / zsh:**
+
+```bash
+export GOOGLE_CLIENT_ID=xxx
+export GOOGLE_CLIENT_SECRET=yyy
+```
+
+**fish:**
+
+```bash
+set -gx GOOGLE_CLIENT_ID xxx
+set -gx GOOGLE_CLIENT_SECRET yyy
+```
+
+- Run `. ~/.bashrc` / `. ~/.zshrc` / `source ~/.config/fish/config.fish` or restart your terminal emulator.
+
+- Run following install command.
 
 ```bash
 cargo install rchore
