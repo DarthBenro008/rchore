@@ -1,3 +1,7 @@
+## Related Issue
+
+<!-- Link the issue that this pull request addresses -->
+
 ## Description
 
 <!-- A small description of what you intended with this pull request -->
@@ -10,10 +14,6 @@
 ### Additional information for maintainers
 
 <!-- A walkthrough of what you change in the source code -->
-
-### Related Issue
-
-<!-- Link the issue that this pull request addresses -->
 
 ### Validations
 
