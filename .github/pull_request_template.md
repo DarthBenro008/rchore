@@ -7,7 +7,7 @@
 - [ ] Fix
 - [ ] Documentation
 
-### What change
+### Additional information for maintainers
 
 <!-- A walkthrough of what you change in the source code -->
 
