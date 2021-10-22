@@ -3,9 +3,9 @@
 <!-- A small description of what you intended with this pull request -->
 
 ### Type
-[ ] Feature
-[ ] Fix
-[ ] Documentation
+- [ ] Feature
+- [ ] Fix
+- [ ] Documentation
 
 ### What change
 
