@@ -4,7 +4,7 @@
 
 ### Type
 - [ ] Feature
-- [ ] Fix
+- [ ] Bug Fix
 - [ ] Documentation
 
 ### Additional information for maintainers
