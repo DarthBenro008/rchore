@@ -150,7 +150,6 @@ fn get_token(
 ) -> anyhow::Result<(String, String)> {
     let listener = TcpListener::bind("127.0.0.1:6555").unwrap();
     let mut stream: std::net::TcpStream = listener.incoming().flatten().next().unwrap();
-    let code;
 
     let mut reader = BufReader::new(&stream);
 
@@ -169,7 +168,7 @@ fn get_token(
         .unwrap();
 
     let (_, value) = code_pair;
-    code = AuthorizationCode::new(value.into_owned());
+    let code = AuthorizationCode::new(value.into_owned());
 
     let message = "Awesome! RChore has been authenticated! You can close this window now :D";
     let response = format!(

@@ -28,7 +28,18 @@ pub enum TaskAction {
         position: usize,
     },
     /// Create a new task in the task-list.
-    Add,
+    Add {
+        /// The title of the task
+        title: Option<String>,
+
+        /// A short description of the task.
+        #[structopt(short, long)]
+        notes: Option<String>,
+
+        /// Set the tasks status to completed.
+        #[structopt(short, long)]
+        completed: bool 
+    },
     /// Clear all completed tasks in a task-list.
     Clear,
     /// Shows simple stats about your tasks

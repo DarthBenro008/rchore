@@ -25,30 +25,11 @@ impl TaskManager {
         Ok(())
     }
 
-    pub fn add_task(&self) -> anyhow::Result<()> {
-        let title: String = Input::with_theme(&ColorfulTheme::default())
-            .with_prompt("Title of the task")
-            .with_initial_text("task")
-            .allow_empty(false)
-            .interact_text()?;
-        let notes: String = Input::with_theme(&ColorfulTheme::default())
-            .with_prompt("Note for task")
-            .with_initial_text("note")
-            .allow_empty(true)
-            .interact_text()?;
-        let items = vec!["No", "Yes"];
-        let completed = Select::with_theme(&ColorfulTheme::default())
-            .with_prompt("Is the task completed?")
-            .items(&items)
-            .default(0)
-            .interact_on_opt(&Term::stderr())?
-            .unwrap();
-        let status = if completed == 0 {
-            String::from("needsAction")
-        } else {
-            String::from("completed")
+    pub fn add_task(&self, title: Option<String>, notes: Option<String>, completed: bool) -> anyhow::Result<()> {
+        let task = match title {
+            Some(t) => self.create_task_without_prompts(t, notes, completed),
+            None => self.create_task_with_prompts(notes, completed)?   
         };
-        let task = Tasks::new(None, title, notes, status);
         let resp = &self.client.add_task(task);
         match resp {
             Ok(task) => {
@@ -58,6 +39,48 @@ impl TaskManager {
             Err(err) => print_error("creating task", err),
         }
         Ok(())
+    }
+
+    fn create_task_without_prompts(&self, title: String, notes: Option<String>, completed: bool) -> Tasks {
+        let status = if completed {
+            String::from("completed")
+        } else {
+            String::from("needsAction")
+        };
+        Tasks::new(None, title, notes.unwrap_or_else(||String::from("")), status)
+    }
+
+    fn create_task_with_prompts (&self,  notes: Option<String>, done: bool) -> anyhow::Result<Tasks> {
+        let title: String = Input::with_theme(&ColorfulTheme::default())
+            .with_prompt("Title of the task")
+            .with_initial_text("task")
+            .allow_empty(false)
+            .interact_text()?;
+ 
+        let notes: String = notes.map(Result::Ok).unwrap_or_else(|| Input::with_theme(&ColorfulTheme::default())
+                .with_prompt("Note for task")
+                .with_initial_text("note")
+                .allow_empty(true)
+                .interact_text()
+        )?;
+
+        let items = vec!["No", "Yes"];
+        let completed = if done { 1_usize } else {  
+            Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("Is the task completed?")
+                .items(&items)
+                .default(0)
+                .interact_on_opt(&Term::stderr())?
+                .unwrap()
+        };
+
+        let status = if done || completed == 1 {
+            String::from("completed")
+        } else {
+            String::from("needsAction")
+        };
+
+        Ok(Tasks::new(None, title, notes, status))
     }
 
     pub fn show_task(&self, pos: usize) -> anyhow::Result<()> {
