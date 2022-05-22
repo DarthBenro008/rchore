@@ -30,7 +30,7 @@ fn main() -> anyhow::Result<()> {
             }
             Delete { position } => generate_task_manager(tasks_database).delete_task(position)?,
             Show { position } => generate_task_manager(tasks_database).show_task(position)?,
-            Add => generate_task_manager(tasks_database).add_task()?,
+            Add { title, notes, completed } => generate_task_manager(tasks_database).add_task(title, notes, completed)?,
             Clear => generate_task_manager(tasks_database).clear_tasks()?,
             Undo { position } => {
                 generate_task_manager(tasks_database).complete_task(position, false)?
