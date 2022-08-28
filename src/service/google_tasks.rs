@@ -119,6 +119,7 @@ impl ApiTasks for TasksDatabase {
             "".to_string(),
             "".to_string(),
             "".to_string(),
+            "".to_string()
         ))
     }
     fn fetch_all_tasks(
@@ -161,6 +162,7 @@ impl ApiTasks for TasksDatabase {
             "".to_string(),
             "".to_string(),
             "".to_string(),
+            "".to_string()
         ))
     }
 
