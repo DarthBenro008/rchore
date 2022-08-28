@@ -1,8 +1,11 @@
+use std::process::exit;
+
 use crate::models::tasks::Tasks;
 use crate::printer::{print_error, print_success, print_task_table, print_warning};
 use crate::service::google_api::GoogleApiClient;
 use crate::service::google_tasks::ApiTasks;
 use anyhow;
+use chrono::{DateTime, Local};
 use console::Term;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 
@@ -47,7 +50,7 @@ impl TaskManager {
         } else {
             String::from("needsAction")
         };
-        Tasks::new(None, title, notes.unwrap_or_else(||String::from("")), status)
+        Tasks::new(None, title, notes.unwrap_or_else(||String::from("")), status, "".to_string())
     }
 
     fn create_task_with_prompts (&self,  notes: Option<String>, done: bool) -> anyhow::Result<Tasks> {
@@ -65,6 +68,33 @@ impl TaskManager {
         )?;
 
         let items = vec!["No", "Yes"];
+        let add_due = Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("Add a due date?")
+                .items(&items)
+                .default(0)
+                .interact_on_opt(&Term::stderr())?
+                .unwrap();
+        
+        let due : String =  if add_due!=1 {"".to_string()} else { 
+            let today = Local::today();
+            let user_input = Input::with_theme(&ColorfulTheme::default())
+                .with_prompt("Due date")
+                // We initialize the field with today's date
+                .with_initial_text(today.format("%Y-%m-%d").to_string())
+                .allow_empty(true)
+                .interact_text()
+                .unwrap();
+                // We complete the user's input with the time (not used by google API) and the local timezone offset
+            match DateTime::parse_from_str(&[user_input,"00:00:00".to_string(),today.offset().to_string()].join(" "), "%Y-%m-%d %H:%M:%S %z") {
+                Ok(date) => {
+                    date.to_rfc3339_opts(chrono::SecondsFormat::Millis, false)},
+                Err(_) => {println!("Provided date is not valid, abording..."); exit(1);},
+
+            }
+        };
+
+
+
         let completed = if done { 1_usize } else {  
             Select::with_theme(&ColorfulTheme::default())
                 .with_prompt("Is the task completed?")
@@ -80,7 +110,7 @@ impl TaskManager {
             String::from("needsAction")
         };
 
-        Ok(Tasks::new(None, title, notes, status))
+        Ok(Tasks::new(None, title, notes, status, due))
     }
 
     pub fn show_task(&self, pos: usize) -> anyhow::Result<()> {

@@ -71,12 +71,13 @@ pub fn force_write(action: String) -> anyhow::Result<()> {
 }
 
 pub fn print_task_table(tasks: &[Tasks]) {
-    let mut table = Table::new();
-    table.set_format(*format::consts::FORMAT_NO_BORDER);
     if tasks.is_empty() {
         print_success("You have no tasks!".to_string());
         return;
     }
+
+    let mut table = Table::new();
+    table.set_format(*format::consts::FORMAT_NO_BORDER);
     table.add_row(row![cb => "Index", "Title", "Status", "Notes", "Due"]);
     let mut order = 1;
     for task in tasks {

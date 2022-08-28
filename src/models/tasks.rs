@@ -34,7 +34,7 @@ pub struct Tasks {
 }
 
 impl Tasks {
-    pub fn new(id: Option<String>, title: String, notes: String, status: String) -> Tasks {
+    pub fn new(id: Option<String>, title: String, notes: String, status: String, due: String) -> Tasks {
         Tasks {
             kind: "".to_string(),
             id,
@@ -45,7 +45,7 @@ impl Tasks {
             position: None,
             notes,
             status,
-            due: String::from(""),
+            due,
         }
     }
 
