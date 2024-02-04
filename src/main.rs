@@ -5,6 +5,7 @@ mod oauth;
 mod printer;
 mod secrets;
 mod service;
+mod tui;
 #[macro_use]
 extern crate prettytable;
 
@@ -30,7 +31,11 @@ fn main() -> anyhow::Result<()> {
             }
             Delete { position } => generate_task_manager(tasks_database).delete_task(position)?,
             Show { position } => generate_task_manager(tasks_database).show_task(position)?,
-            Add { title, notes, completed } => generate_task_manager(tasks_database).add_task(title, notes, completed)?,
+            Add {
+                title,
+                notes,
+                completed,
+            } => generate_task_manager(tasks_database).add_task(title, notes, completed)?,
             Clear => generate_task_manager(tasks_database).clear_tasks()?,
             Undo { position } => {
                 generate_task_manager(tasks_database).complete_task(position, false)?
@@ -60,6 +65,7 @@ fn main() -> anyhow::Result<()> {
             Logout => oauth::logout(&tasks_database)?,
         },
         Battery => MiscManager.help_p10k_script_generation()?,
+        Tui => tui::open(tasks_database)?,
     }
     Ok(())
 }

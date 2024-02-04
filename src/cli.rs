@@ -38,7 +38,7 @@ pub enum TaskAction {
 
         /// Set the tasks status to completed.
         #[structopt(short, long)]
-        completed: bool 
+        completed: bool,
     },
     /// Clear all completed tasks in a task-list.
     Clear,
@@ -108,4 +108,6 @@ pub enum Commands {
     },
     /// Helps you set-up battery for p10k
     Battery,
+    /// Opens a terminal user interface
+    Tui,
 }
