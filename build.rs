@@ -3,8 +3,9 @@ use std::env;
 use std::io::Write;
 
 fn write_link_info_type(file: &mut std::fs::File) -> Result<(), std::io::Error> {
-    let cid = env::var("GOOGLE_CLIENT_ID").unwrap();
-    let cls = env::var("GOOGLE_CLIENT_SECRET").unwrap();
+    let cid = env::var("GOOGLE_CLIENT_ID").expect("env var GOOGLE_CLIENT_ID should be set but was");
+    let cls = env::var("GOOGLE_CLIENT_SECRET")
+        .expect("env var GOOGLE_CLIENT_SECRET should be set but was");
     let data = format!(
         "pub struct Secrets {{
     pub client_id: String,
