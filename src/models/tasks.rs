@@ -31,6 +31,8 @@ pub struct Tasks {
     pub status: String,
     #[serde(default)]
     pub due: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parent: Option<String>,
 }
 
 impl Tasks {
@@ -46,6 +48,7 @@ impl Tasks {
             notes,
             status,
             due: String::from(""),
+            parent: None,
         }
     }
 
@@ -61,10 +64,11 @@ impl Tasks {
             notes: String::from(&self.notes),
             status: String::from(&self.status),
             due: String::from(&self.due),
+            parent: self.parent.clone(),
         }
     }
 
-    pub fn get_sanitised_data(&self) -> (String, String, String, String) {
+    pub fn get_sanitised_data(&self, tasks: &[Tasks]) -> (String, String, String, String, String) {
         let status = if self.status == "needsAction" {
             String::from("Incomplete")
         } else {
@@ -82,7 +86,22 @@ impl Tasks {
         } else {
             String::from(&self.notes)
         };
-        (String::from(&self.title), status, notes, due)
+        let parent = self.parent.clone().unwrap_or("No parent".into());
+
+        println!("{self:?}");
+
+        let parent = tasks
+            .iter()
+            .find(|t| t.id == Some(parent.clone()))
+            .map(|t| t.title.clone())
+            .unwrap_or("Parent not found!".to_string());
+        (
+            String::from(&self.title),
+            status,
+            notes,
+            due,
+            parent.to_string(),
+        )
     }
 }
 
@@ -103,13 +122,15 @@ impl fmt::Display for Tasks {
         } else {
             String::from(&self.notes)
         };
+        let parent = self.parent.clone().unwrap_or("No parent".into());
         write!(
             f,
-            "{0: <10} | {1: <10} | {2: <10} | {3: <10}",
+            "{0: <10} | {1: <10} | {2: <10} | {3: <10} | {4: <10}",
             style(&self.title).for_stdout().green(),
             notes,
             status,
-            due
+            due,
+            parent,
         )
     }
 }
