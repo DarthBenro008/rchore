@@ -104,7 +104,7 @@ impl TaskListManager {
         let resp = &self.client.fetch_tasklist(false);
         match resp {
             Ok(data) => Ok(data.items.clone()),
-            Err(_err) => Err(anyhow!("Cannot fetch tasklists!")),
+            Err(err) => Err(anyhow!("Cannot fetch tasklists! {}", err)),
         }
     }
 
