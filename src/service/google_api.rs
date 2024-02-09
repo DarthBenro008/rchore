@@ -59,11 +59,11 @@ impl GoogleApiClient {
 }
 
 pub fn format_base_url(base_url: &str, route: String) -> String {
-    return format!("{}{}", base_url, route);
+    format!("{}{}", base_url, route)
 }
 
 pub fn format_task_url(base_url: &str, route: String, task_id: String) -> String {
-    return format!("{}/{}", format_base_url(base_url, route), task_id);
+    format!("{}/{}", format_base_url(base_url, route), task_id)
 }
 
 pub fn format_specific_task_url(
@@ -72,9 +72,9 @@ pub fn format_specific_task_url(
     task_id: String,
     task_route: String,
 ) -> String {
-    return format!(
+    format!(
         "{}/{}",
         format_task_url(base_url, route, task_id),
         task_route
-    );
+    )
 }

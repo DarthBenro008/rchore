@@ -25,7 +25,7 @@ impl Secrets {{
 }
 
 fn generate_module() -> Result<(), std::io::Error> {
-    let mut module = std::fs::File::create(&format!("src/{}.rs", "secrets"))?;
+    let mut module = std::fs::File::create(format!("src/{}.rs", "secrets"))?;
     write_link_info_type(&mut module)?;
     Ok(())
 }

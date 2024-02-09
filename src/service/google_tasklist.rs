@@ -28,7 +28,7 @@ impl ApiTaskList for GoogleApiClient {
         }
         let task_list = resp.json::<TaskListResponse>()?;
         if default {
-            let first_tasklist = task_list.items.get(0);
+            let first_tasklist = task_list.items.first();
             match first_tasklist {
                 Some(task_list) => {
                     self.localdb.insert_default_tasklist(
